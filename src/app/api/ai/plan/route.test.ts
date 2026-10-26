@@ -74,7 +74,8 @@ describe("/api/ai/plan route", () => {
     const res = await POST(req);
     expect(res.status).toBe(500);
     const json = await res.json();
-    expect(json.error).toBe("Gemini quota exceeded");
+    expect(json.error).toBe("Unable to process your request at this time. Please try again.");
+    expect(json.code).toBe("AI_SERVICE_ERROR");
   });
 
   it("blocks requests when rate limit is exceeded", async () => {

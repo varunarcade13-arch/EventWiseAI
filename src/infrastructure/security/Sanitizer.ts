@@ -1,10 +1,12 @@
 export class Sanitizer {
   private static readonly HTML_TAG_REGEX = /<[^>]*>?/gm;
-  private static readonly SCRIPT_REGEX = /javascript:/gi;
+  private static readonly SCRIPT_REGEX = /(?:javascript|vbscript|data):/gi;
+  private static readonly CONTROL_CHARS_REGEX = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
 
   /**
    * Sanitizes generic string inputs by stripping HTML tags, script schemes,
-   * trimming whitespace, and enforcing maximum length.
+   * non-printable control characters, null bytes, trimming whitespace,
+   * and enforcing maximum length.
    */
   public static sanitizeString(input: unknown, maxLength: number = 2000): string {
     if (typeof input !== "string") {
@@ -12,6 +14,8 @@ export class Sanitizer {
     }
 
     const stripped = input
+      .normalize("NFKC")
+      .replace(this.CONTROL_CHARS_REGEX, "")
       .replace(this.HTML_TAG_REGEX, "")
       .replace(this.SCRIPT_REGEX, "")
       .trim();

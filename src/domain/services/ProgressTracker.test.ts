@@ -93,7 +93,10 @@ describe("ProgressTracker", () => {
 
   it("handles event date today", () => {
     const today = new Date();
-    const todayStr = today.toISOString().split("T")[0]!;
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const todayStr = `${year}-${month}-${day}`;
     const todayEvent = {
       ...baseEvent,
       date: todayStr,

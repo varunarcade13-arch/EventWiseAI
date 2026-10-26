@@ -3,11 +3,14 @@ import { Sanitizer } from "./Sanitizer";
 
 describe("Sanitizer", () => {
   it("strips HTML tags and script protocols", () => {
-    const raw = `<script>alert('xss')</script>Hello <b onmouseover="evil()">World</b> javascript:void(0)`;
+    const raw = `<script>alert('xss')</script>Hello <b onmouseover="evil()">World</b> javascript:void(0) vbscript:execute data:text/html\0\x08`;
     const sanitized = Sanitizer.sanitizeString(raw);
     expect(sanitized).not.toContain("<script>");
     expect(sanitized).not.toContain("<b>");
     expect(sanitized).not.toContain("javascript:");
+    expect(sanitized).not.toContain("vbscript:");
+    expect(sanitized).not.toContain("data:");
+    expect(sanitized).not.toContain("\0");
     expect(sanitized).toContain("Hello World");
   });
 

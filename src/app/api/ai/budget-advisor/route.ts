@@ -18,8 +18,8 @@ const RequestSchema = z.object({
   type: z.enum(["wedding", "birthday", "community", "other"]),
   totalBudget: z.number().nonnegative(),
   currency: z.enum(["INR", "USD", "EUR", "GBP"]),
-  expectedGuests: z.number().int().positive(),
-  budgetCategories: z.array(CategoryInputSchema),
+  expectedGuests: z.number().int().positive().max(1000000),
+  budgetCategories: z.array(CategoryInputSchema).max(100),
 });
 
 export async function POST(request: Request) {
