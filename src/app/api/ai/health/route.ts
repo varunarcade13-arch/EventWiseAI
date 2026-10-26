@@ -42,10 +42,11 @@ async function handleDiagnostic(): Promise<NextResponse> {
   };
 
   const modelsToTest = [
+    "gemini-flash-latest",
+    "gemini-3.5-flash",
+    "gemini-3.7-flash",
     "gemini-3.8-flash",
-    "gemini-2.5-flash",
-    "gemini-1.5-flash-latest",
-    "gemini-flash",
+    "gemini-flash-lite-latest",
   ];
   const results: Record<string, { success: boolean; response?: string; error?: Record<string, unknown> }> = {};
 
