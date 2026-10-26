@@ -120,7 +120,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               {upcomingTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/60 dark:border-slate-800 text-xs"
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/60 dark:border-slate-700/80 text-xs"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Clock className="w-4 h-4 text-brand-500 shrink-0" />
@@ -129,7 +129,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <span className="text-slate-500">{formatDate(task.dueDate)}</span>
+                    <span className="text-slate-500 dark:text-slate-300">{formatDate(task.dueDate)}</span>
                     <Badge
                       variant={
                         task.priority === "high"
@@ -149,7 +149,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           ) : (
             <div className="text-center py-8">
               <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-              <p className="text-xs text-slate-500">All planned tasks are completed!</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">All planned tasks are completed!</p>
             </div>
           )}
         </Card>
@@ -175,7 +175,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
           <div className="space-y-3.5">
             <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="text-slate-500">Allocation Progress</span>
+              <span className="text-slate-600 dark:text-slate-300">Allocation Progress</span>
               <span className="text-slate-900 dark:text-slate-100">
                 {progress.budgetAllocatedPercentage}% of target
               </span>
@@ -190,9 +190,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               {event.budgetCategories.slice(0, 4).map((c) => (
                 <div
                   key={c.id}
-                  className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/60 dark:border-slate-800"
+                  className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/60 dark:border-slate-700/80"
                 >
-                  <span className="text-[11px] text-slate-500 truncate block">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate block">
                     {c.name}
                   </span>
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -220,7 +220,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 {event.recommendations.map((rec) => (
                   <div
                     key={rec.id}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/60 dark:border-slate-800 text-xs"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/60 dark:border-slate-700/80 text-xs"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-bold text-slate-800 dark:text-slate-200">
@@ -232,7 +232,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                         </Badge>
                       )}
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400">
+                    <p className="text-slate-600 dark:text-slate-300">
                       {rec.description}
                     </p>
                   </div>
@@ -253,7 +253,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 {event.risks.map((risk) => (
                   <div
                     key={risk.id}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/60 dark:border-slate-800 text-xs"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/60 dark:border-slate-700/80 text-xs"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-bold text-slate-800 dark:text-slate-200">
@@ -272,7 +272,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                         {risk.impact} impact
                       </Badge>
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400">
+                    <p className="text-slate-600 dark:text-slate-300">
                       <strong>Mitigation:</strong> {risk.mitigation}
                     </p>
                   </div>

@@ -74,7 +74,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
             {/* Potential Savings */}
             {budgetAnalysis.potentialSavings?.length > 0 && (
               <div>
-                <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+                <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-300 mb-2 flex items-center gap-1.5">
                   <TrendingUp className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
                   Potential Savings Opportunities
                 </h3>
@@ -89,7 +89,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
                           Save ~{formatCurrency(saving.estimatedSavings, currency)}
                         </Badge>
                       </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                      <p className="text-xs text-slate-600 dark:text-slate-300">
                         {saving.tip}
                       </p>
                     </Card>
@@ -101,7 +101,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
             {/* Redistribution Suggestions */}
             {budgetAnalysis.redistributionSuggestions?.length > 0 && (
               <div>
-                <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+                <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-300 mb-2 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-brand-500" aria-hidden="true" />
                   Suggested Rebalancing
                 </h3>
@@ -109,16 +109,16 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
                   {budgetAnalysis.redistributionSuggestions.map((item, idx) => (
                     <div
                       key={idx}
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"
+                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"
                     >
                       <div>
                         <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
                           {item.category}
                         </span>
-                        <p className="text-xs text-slate-500">{item.reason}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-300">{item.reason}</p>
                       </div>
                       <div className="flex items-center gap-2 text-xs font-semibold shrink-0">
-                        <span className="text-slate-400 line-through">
+                        <span className="text-slate-500 dark:text-slate-400 line-through">
                           {formatCurrency(item.currentAllocation, currency)}
                         </span>
                         <span>→</span>
@@ -144,7 +144,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
             {/* Themes */}
             {ideasPlan.themes?.length > 0 && (
               <div>
-                <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+                <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-300 mb-2 flex items-center gap-1.5">
                   <Lightbulb className="w-3.5 h-3.5 text-purple-500" aria-hidden="true" />
                   Curated Themes
                 </h3>
@@ -165,7 +165,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {ideasPlan.activities?.length > 0 && (
                 <Card className="p-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">
                     Activities & Entertainment
                   </h4>
                   <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 list-disc pl-4">
@@ -178,7 +178,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
 
               {ideasPlan.foodIdeas?.length > 0 && (
                 <Card className="p-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">
                     Culinary & Food Touches
                   </h4>
                   <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 list-disc pl-4">
@@ -191,7 +191,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
 
               {ideasPlan.decorationIdeas?.length > 0 && (
                 <Card className="p-4 sm:col-span-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">
                     Decoration & Aesthetic Accents
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-300">
@@ -219,7 +219,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
               {riskAnalysis.risks.map((r, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm"
+                  className="p-4 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-2">
@@ -241,7 +241,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
                       {r.impact.toUpperCase()} IMPACT
                     </Badge>
                   </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 p-2.5 rounded-lg mt-2">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-transparent dark:border-slate-700/60 p-2.5 rounded-lg mt-2">
                     <strong>Mitigation Strategy:</strong> {r.mitigation}
                   </p>
                 </div>
@@ -249,7 +249,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
             </div>
 
             {onApplyRisks && (
-              <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-700/80">
                 <Button
                   variant="primary"
                   onClick={onApplyRisks}

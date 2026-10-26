@@ -17,17 +17,17 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ event, progress }) => {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {/* 1. Days Remaining */}
       <Card className="flex items-center gap-3.5 p-4 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-850">
-        <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+        <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shrink-0">
           <Calendar className="w-5 h-5" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
             Timeline
           </p>
           <p className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">
             {daysInfo.label}
           </p>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             {event.date}
           </p>
         </div>
@@ -35,17 +35,17 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ event, progress }) => {
 
       {/* 2. Total Budget */}
       <Card className="flex items-center gap-3.5 p-4 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-850">
-        <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+        <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 flex items-center justify-center shrink-0">
           <DollarSign className="w-5 h-5" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
             Total Budget
           </p>
           <p className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">
             {formatCurrency(event.totalBudget, event.currency)}
           </p>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             {progress.budgetAllocatedPercentage}% allocated
           </p>
         </div>
@@ -53,17 +53,17 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ event, progress }) => {
 
       {/* 3. Expected Guests */}
       <Card className="flex items-center gap-3.5 p-4 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-850">
-        <div className="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+        <div className="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300 flex items-center justify-center shrink-0">
           <Users className="w-5 h-5" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
             Guest List
           </p>
           <p className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">
             {event.expectedGuests} Guests
           </p>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             Expected headcount
           </p>
         </div>
@@ -71,17 +71,17 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ event, progress }) => {
 
       {/* 4. Planning Progress */}
       <Card className="flex items-center gap-3.5 p-4 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-850">
-        <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+        <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300 flex items-center justify-center shrink-0">
           <Target className="w-5 h-5" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
             Planning Status
           </p>
           <p className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">
             {progress.overallPercentage}% Done
           </p>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             {progress.tasksCompleted}/{progress.totalTasks} tasks • {progress.vendorsBooked}/{progress.totalVendors} vendors
           </p>
         </div>

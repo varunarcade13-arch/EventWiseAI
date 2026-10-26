@@ -11,6 +11,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        slate: {
+          850: "#172033",
+        },
         brand: {
           50: "#eef2ff",
           100: "#e0e7ff",

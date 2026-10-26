@@ -129,9 +129,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         <div
           role="group"
           aria-label="Filter tasks by status"
-          className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800 overflow-x-auto text-xs"
+          className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100 dark:border-slate-700/80 overflow-x-auto text-xs"
         >
-          <span className="text-slate-400 font-semibold uppercase tracking-wider text-[11px] mr-1">
+          <span className="text-slate-500 dark:text-slate-300 font-semibold uppercase tracking-wider text-[11px] mr-1">
             Filter:
           </span>
           {(
@@ -165,7 +165,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
               className={`px-3 py-1.5 rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                 filterStatus === btn.id
                   ? "bg-brand-600 text-white"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
               {btn.label}
@@ -185,8 +185,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                   key={task.id}
                   className={`flex items-start sm:items-center justify-between p-3.5 rounded-xl border transition-all ${
                     task.status === "completed"
-                      ? "bg-slate-50/50 dark:bg-slate-900/30 border-slate-200/60 dark:border-slate-800/60 opacity-80"
-                      : "bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-sm hover:border-brand-300"
+                      ? "bg-slate-50/50 dark:bg-slate-900/30 border-slate-200/60 dark:border-slate-700/60 opacity-80"
+                      : "bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:border-brand-300"
                   }`}
                 >
                   <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
@@ -206,27 +206,27 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       <p
                         className={`text-sm font-semibold truncate ${
                           task.status === "completed"
-                            ? "line-through text-slate-400 dark:text-slate-500"
+                            ? "line-through text-slate-400 dark:text-slate-400"
                             : "text-slate-900 dark:text-slate-100"
                         }`}
                       >
                         {task.title}
                       </p>
-                      <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-500">
+                      <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-                          <span className={isOverdue ? "text-rose-600 font-bold" : ""}>
+                          <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-400" aria-hidden="true" />
+                          <span className={isOverdue ? "text-rose-600 dark:text-rose-400 font-bold" : ""}>
                             {formatDate(task.dueDate)}
                             {isOverdue && " (Overdue)"}
                           </span>
                         </span>
                         {task.category && (
-                          <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-600 dark:text-slate-400">
+                          <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-600 dark:text-slate-300">
                             {task.category}
                           </span>
                         )}
                         {task.assignedTo && (
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400">
                             Assigned to: {task.assignedTo}
                           </span>
                         )}
@@ -248,7 +248,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       onChange={(e) =>
                         onUpdateTaskStatus(task.id, e.target.value as TaskStatus)
                       }
-                      className="text-xs bg-slate-100 dark:bg-slate-800 border-none rounded-lg px-2 py-1 font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 cursor-pointer"
+                      className="text-xs bg-slate-100 dark:bg-slate-800 border border-transparent dark:border-slate-700 rounded-lg px-2 py-1 font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 cursor-pointer"
                     >
                       <option value="not_started">Not Started</option>
                       <option value="in_progress">In Progress</option>
@@ -259,7 +259,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       type="button"
                       onClick={() => onDeleteTask(task.id)}
                       aria-label={`Delete task ${task.title}`}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                      className="p-1.5 rounded-lg text-slate-400 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>

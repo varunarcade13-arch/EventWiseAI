@@ -103,7 +103,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
         <div
           role="group"
           aria-label="Filter vendors by category"
-          className="flex items-center gap-1.5 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800 overflow-x-auto text-xs no-scrollbar"
+          className="flex items-center gap-1.5 mb-4 pb-3 border-b border-slate-100 dark:border-slate-700/80 overflow-x-auto text-xs no-scrollbar"
         >
           {categoriesList.map((cat) => (
             <button
@@ -114,7 +114,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
               className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                 selectedCategory === cat.id
                   ? "bg-brand-600 text-white"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
               {cat.label}
@@ -133,13 +133,13 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
               return (
                 <div
                   key={vendor.id}
-                  className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between"
+                  className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                             {vendor.category}
                           </span>
                           <Badge variant={statusInfo.variant} size="sm">
@@ -155,15 +155,15 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                         type="button"
                         onClick={() => onDeleteVendor(vendor.id)}
                         aria-label={`Delete vendor ${vendor.name}`}
-                        className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                        className="p-1 rounded-lg text-slate-400 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                       >
                         <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 py-2 border-y border-slate-100 dark:border-slate-800 my-2">
+                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 py-2 border-y border-slate-100 dark:border-slate-700/80 my-2">
                       <div>
-                        <span className="text-[11px] text-slate-400 block">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
                           Estimated Cost
                         </span>
                         <span className="font-semibold text-slate-800 dark:text-slate-200">
@@ -171,7 +171,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[11px] text-slate-400 block">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
                           Final / Contract
                         </span>
                         <span className="font-semibold text-brand-600 dark:text-brand-400">
@@ -183,27 +183,27 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                     </div>
 
                     {/* Contacts info */}
-                    <div className="space-y-1 text-xs text-slate-500 mb-3">
+                    <div className="space-y-1 text-xs text-slate-600 dark:text-slate-300 mb-3">
                       {vendor.contactPerson && (
                         <div className="flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                          <User className="w-3.5 h-3.5 text-slate-400 dark:text-slate-400" aria-hidden="true" />
                           <span>{vendor.contactPerson}</span>
                         </div>
                       )}
                       {vendor.phone && (
                         <div className="flex items-center gap-1.5">
-                          <Phone className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                          <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-slate-400" aria-hidden="true" />
                           <span>{vendor.phone}</span>
                         </div>
                       )}
                       {vendor.email && (
                         <div className="flex items-center gap-1.5">
-                          <Mail className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                          <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-slate-400" aria-hidden="true" />
                           <span>{vendor.email}</span>
                         </div>
                       )}
                       {vendor.notes && (
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 p-2 rounded-lg mt-2">
+                        <p className="text-[11px] text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-transparent dark:border-slate-700/60 p-2 rounded-lg mt-2">
                           {vendor.notes}
                         </p>
                       )}
@@ -211,8 +211,8 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                   </div>
 
                   {/* Status selector */}
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <span className="text-[11px] text-slate-400 font-medium">
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-700/80 flex items-center justify-between">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-300 font-medium">
                       Status:
                     </span>
                     <select
@@ -224,7 +224,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                           e.target.value as VendorStatus
                         )
                       }
-                      className="text-xs bg-slate-100 dark:bg-slate-800 border-none rounded-lg px-2.5 py-1 font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 cursor-pointer"
+                      className="text-xs bg-slate-100 dark:bg-slate-800 border border-transparent dark:border-slate-700 rounded-lg px-2.5 py-1 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 cursor-pointer"
                     >
                       <option value="not_contacted">Not Contacted</option>
                       <option value="contacted">In Discussion</option>
@@ -236,12 +236,12 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
             })}
           </div>
         ) : (
-          <div className="text-center py-12 px-4 border-dashed border-2 rounded-xl">
-            <Briefcase className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <div className="text-center py-12 px-4 border-dashed border-2 border-slate-200 dark:border-slate-700 rounded-xl">
+            <Briefcase className="w-8 h-8 text-slate-400 dark:text-slate-400 mx-auto mb-2" />
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
               No vendors found for this category
             </p>
-            <p className="text-xs text-slate-400 mt-1 mb-4">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">
               Add vendors manually or click AI Vendor Checklist to generate recommendations.
             </p>
             <Button

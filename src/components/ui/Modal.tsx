@@ -120,11 +120,11 @@ export const Modal: React.FC<ModalProps> = ({
         ref={modalRef}
         tabIndex={-1}
         className={cn(
-          "w-full bg-white dark:bg-slate-900 rounded-2xl shadow-glass border border-slate-200 dark:border-slate-800 p-6 max-h-[90vh] flex flex-col overflow-hidden animate-fade-in focus:outline-none",
+          "w-full bg-white dark:bg-slate-900 rounded-2xl shadow-glass border border-slate-200 dark:border-slate-700 p-6 max-h-[90vh] flex flex-col overflow-hidden animate-fade-in focus:outline-none",
           sizeStyles[size]
         )}
       >
-        <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-700">
           <div>
             <h2
               id={titleId}
@@ -135,7 +135,7 @@ export const Modal: React.FC<ModalProps> = ({
             {description && (
               <p
                 id={descriptionId}
-                className="text-xs text-slate-500 dark:text-slate-400 mt-1"
+                className="text-xs text-slate-500 dark:text-slate-300 mt-1"
               >
                 {description}
               </p>
@@ -145,7 +145,7 @@ export const Modal: React.FC<ModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="p-1.5 rounded-lg text-slate-400 dark:text-slate-300 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           >
             <svg
               aria-hidden="true"

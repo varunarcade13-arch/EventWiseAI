@@ -57,7 +57,7 @@ export const EventCard: React.FC<EventCardProps> = ({
               {event.type.toUpperCase()}
             </Badge>
             {event.isDemo && (
-              <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">
+              <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
                 Demo
               </span>
             )}
@@ -70,11 +70,11 @@ export const EventCard: React.FC<EventCardProps> = ({
           <p className="text-sm font-bold text-brand-600 dark:text-brand-400">
             {formatCurrency(event.totalBudget, event.currency)}
           </p>
-          <p className="text-[11px] text-slate-400">budget</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">budget</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400 mb-4">
+      <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300 mb-4">
         <div className="flex items-center gap-1.5 truncate">
           <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
           <span className="truncate">{formatDate(event.date)}</span>
@@ -89,7 +89,7 @@ export const EventCard: React.FC<EventCardProps> = ({
         </div>
       </div>
 
-      <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+      <div className="pt-3 border-t border-slate-100 dark:border-slate-700">
         <ProgressBar
           value={progress.overallPercentage}
           label="Planning Progress"

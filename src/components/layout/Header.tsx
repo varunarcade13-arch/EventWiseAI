@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-950/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-700/80 bg-white/85 dark:bg-slate-950/85 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand */}
         <div className="flex items-center gap-3">
@@ -38,11 +38,11 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="font-bold text-lg text-slate-900 dark:text-slate-50 tracking-tight">
                 EventWise<span className="text-brand-600 dark:text-brand-400"> AI</span>
               </span>
-              <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800/60">
+              <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300 border border-brand-200/60 dark:border-brand-700/60">
                 PRO
               </span>
             </div>
-            <p className="hidden md:block text-[11px] text-slate-500 dark:text-slate-400 leading-none">
+            <p className="hidden md:block text-[11px] text-slate-500 dark:text-slate-300 leading-none">
               GenAI Planning Assistant
             </p>
           </div>
@@ -55,8 +55,8 @@ export const Header: React.FC<HeaderProps> = ({
               <label htmlFor="header-event-select" className="sr-only">
                 Select Active Event
               </label>
-              <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-1.5 gap-2">
-                <Calendar className="w-4 h-4 text-slate-500 shrink-0" aria-hidden="true" />
+              <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-1.5 gap-2">
+                <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" aria-hidden="true" />
                 <select
                   id="header-event-select"
                   value={activeEvent?.id || ""}
@@ -85,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
               {isDarkMode ? (
                 <Sun className="w-4 h-4 text-amber-500" aria-hidden="true" />
               ) : (
-                <Moon className="w-4 h-4 text-slate-600 dark:text-slate-400" aria-hidden="true" />
+                <Moon className="w-4 h-4 text-slate-600 dark:text-slate-300" aria-hidden="true" />
               )}
             </button>
           )}

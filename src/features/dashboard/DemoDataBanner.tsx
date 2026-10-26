@@ -13,7 +13,7 @@ export const DemoDataBanner: React.FC<DemoDataBannerProps> = ({ isDemo, onResetD
     <div
       role="region"
       aria-label="Demo mode notice"
-      className="w-full bg-gradient-to-r from-brand-50/90 via-indigo-50/80 to-purple-50/90 dark:from-brand-950/40 dark:via-slate-900/60 dark:to-purple-950/40 border-b border-brand-200/60 dark:border-brand-900/40 px-4 py-2.5"
+      className="w-full bg-gradient-to-r from-brand-50/90 via-indigo-50/80 to-purple-50/90 dark:from-brand-950/40 dark:via-slate-900/60 dark:to-purple-950/40 border-b border-brand-200/60 dark:border-brand-700/60 px-4 py-2.5"
     >
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2 text-brand-900 dark:text-brand-200">

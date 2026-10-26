@@ -225,26 +225,26 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
         </div>
 
         {/* Auto AI Plan toggle */}
-        <div className="p-3.5 rounded-xl bg-gradient-to-r from-brand-50 to-indigo-50 dark:from-brand-950/40 dark:to-indigo-950/40 border border-brand-200 dark:border-brand-800 flex items-start gap-3 mt-1">
+        <div className="p-3.5 rounded-xl bg-gradient-to-r from-brand-50 to-indigo-50 dark:from-brand-950/40 dark:to-indigo-950/40 border border-brand-200 dark:border-brand-700 flex items-start gap-3 mt-1">
           <input
             id="auto-ai-plan"
             type="checkbox"
             checked={formData.autoGenerateAI}
             onChange={(e) => handleChange("autoGenerateAI", e.target.checked)}
-            className="mt-1 w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-slate-700 cursor-pointer"
+            className="mt-1 w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 cursor-pointer"
           />
           <label htmlFor="auto-ai-plan" className="text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
             <span className="font-bold flex items-center gap-1.5 text-brand-900 dark:text-brand-200">
               <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
               Auto-generate structured plan with Google Gemini
             </span>
-            <span className="block mt-0.5 text-slate-500 dark:text-slate-400">
+            <span className="block mt-0.5 text-slate-600 dark:text-slate-300">
               Immediately crafts customized budget categories, timeline milestones, vendor checklist, and risk mitigations.
             </span>
           </label>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 mt-2">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-700/80 mt-2">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>

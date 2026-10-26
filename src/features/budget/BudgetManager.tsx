@@ -35,8 +35,8 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
       {/* 1. Top Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Budget Card */}
-        <Card className="bg-slate-900 text-white dark:bg-slate-900 border-slate-800">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <Card className="bg-slate-900 text-white dark:bg-slate-900 border-slate-800 dark:border-slate-700">
+          <p className="text-xs font-semibold text-slate-300 dark:text-slate-300 uppercase tracking-wider">
             Total Target Budget
           </p>
           <p className="text-2xl font-black mt-1 text-white">
@@ -54,7 +54,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         {/* Total Allocated Card */}
         <Card>
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               Allocated
             </p>
             {summary.remainingAllocated < 0 ? (
@@ -70,7 +70,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           <p className="text-2xl font-black mt-1 text-slate-900 dark:text-slate-100">
             {formatCurrency(summary.totalAllocated, event.currency)}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {summary.remainingAllocated >= 0
               ? `${formatCurrency(summary.remainingAllocated, event.currency)} unallocated`
               : `${formatCurrency(Math.abs(summary.remainingAllocated), event.currency)} over budget`}
@@ -80,7 +80,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         {/* Total Actual Spent Card */}
         <Card>
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               Actual Spent
             </p>
             <Badge variant="neutral" size="sm">
@@ -90,7 +90,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           <p className="text-2xl font-black mt-1 text-slate-900 dark:text-slate-100">
             {formatCurrency(summary.totalActual, event.currency)}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {summary.remainingActual >= 0
               ? `${formatCurrency(summary.remainingActual, event.currency)} remaining cash`
               : `${formatCurrency(Math.abs(summary.remainingActual), event.currency)} cash deficit`}
@@ -207,7 +207,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           {/* Categories Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm" aria-label="Budget categories table">
-              <thead className="text-xs uppercase bg-slate-50 dark:bg-slate-850/60 text-slate-500 dark:text-slate-400 border-y border-slate-200 dark:border-slate-800">
+              <thead className="text-xs uppercase bg-slate-50 dark:bg-slate-850 text-slate-600 dark:text-slate-300 border-y border-slate-200 dark:border-slate-700">
                 <tr>
                   <th scope="col" className="px-4 py-3">Category</th>
                   <th scope="col" className="px-4 py-3">Allocated</th>
@@ -217,7 +217,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                   <th scope="col" className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
                 {event.budgetCategories.map((cat) => {
                   const variance = cat.allocated - (cat.actual || 0);
                   return (
@@ -228,18 +228,18 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                       <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-slate-100">
                         {cat.name}
                       </td>
-                      <td className="px-4 py-3.5 text-slate-700 dark:text-slate-300 font-medium">
+                      <td className="px-4 py-3.5 text-slate-700 dark:text-slate-200 font-medium">
                         {formatCurrency(cat.allocated, event.currency)}
                       </td>
-                      <td className="px-4 py-3.5 text-slate-700 dark:text-slate-300">
+                      <td className="px-4 py-3.5 text-slate-700 dark:text-slate-200">
                         {formatCurrency(cat.actual || 0, event.currency)}
                       </td>
                       <td className="px-4 py-3.5">
                         <span
                           className={`font-semibold text-xs ${
                             variance >= 0
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-rose-600 dark:text-rose-400"
+                              ? "text-emerald-700 dark:text-emerald-300"
+                              : "text-rose-700 dark:text-rose-300"
                           }`}
                         >
                           {variance >= 0
@@ -247,7 +247,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                             : `${formatCurrency(variance, event.currency)} over`}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 text-xs text-slate-500 max-w-xs truncate">
+                      <td className="px-4 py-3.5 text-xs text-slate-600 dark:text-slate-300 max-w-xs truncate">
                         {cat.notes || "—"}
                       </td>
                       <td className="px-4 py-3.5 text-right">
@@ -255,7 +255,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                           type="button"
                           onClick={() => onDeleteCategory(cat.id)}
                           aria-label={`Delete ${cat.name} category`}
-                          className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                          className="p-1 rounded-lg text-slate-400 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                         >
                           <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </button>
@@ -271,8 +271,8 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
 
       {/* Empty State */}
       {event.budgetCategories.length === 0 && (
-        <Card className="text-center py-12 px-4 border-dashed border-2">
-          <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-3">
+        <Card className="text-center py-12 px-4 border-dashed border-2 dark:border-slate-700">
+          <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-300 flex items-center justify-center mx-auto mb-3">
             <TrendingUp className="w-6 h-6" aria-hidden="true" />
           </div>
           <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
