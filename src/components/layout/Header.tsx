@@ -61,10 +61,10 @@ export const Header: React.FC<HeaderProps> = ({
                   id="header-event-select"
                   value={activeEvent?.id || ""}
                   onChange={(e) => onSelectEvent(e.target.value)}
-                  className="bg-transparent text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer max-w-[130px] sm:max-w-[200px] truncate"
+                  className="bg-transparent text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-lg cursor-pointer max-w-[130px] sm:max-w-[200px] truncate"
                 >
                   {events.map((e) => (
-                    <option key={e.id} value={e.id}>
+                    <option key={e.id} value={e.id} className="text-slate-900 bg-white dark:bg-slate-900 dark:text-slate-100">
                       {e.name} {e.isDemo ? "(Demo)" : ""}
                     </option>
                   ))}

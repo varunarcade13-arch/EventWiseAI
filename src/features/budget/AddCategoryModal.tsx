@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 export interface AddCategoryModalProps {
   isOpen: boolean;
@@ -22,11 +22,13 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       setError("Category name is required.");
+      nameInputRef.current?.focus();
       return;
     }
 
@@ -60,6 +62,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     >
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <Input
+          ref={nameInputRef}
           label="Category Name"
           placeholder="e.g. Floral Decor, Drone Video, Shuttle Service"
           value={name}

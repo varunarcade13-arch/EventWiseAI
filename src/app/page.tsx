@@ -35,6 +35,7 @@ import {
   Sparkles,
   Plus,
 } from "lucide-react";
+import { formatDate } from "@/lib/formatters";
 import React, { useEffect, useMemo, useState } from "react";
 
 export default function HomePage() {
@@ -730,9 +731,16 @@ export default function HomePage() {
 
   if (!isLoaded || !activeEvent) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[500px]">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex-1 flex items-center justify-center min-h-[500px]"
+      >
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center animate-spin">
+          <div
+            className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center animate-spin"
+            aria-hidden="true"
+          >
             <Sparkles className="w-5 h-5" />
           </div>
           <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
@@ -809,6 +817,23 @@ export default function HomePage() {
         tabIndex={-1}
         className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 focus:outline-none"
       >
+        {/* Page Title & Active Event Banner (Meaningful h1 for WCAG 2.2 AA) */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-50 tracking-tight">
+                {activeEvent.name}
+              </h1>
+              <span className="text-xs uppercase font-bold px-2.5 py-0.5 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
+                {activeEvent.type}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {activeEvent.location} • Scheduled for {formatDate(activeEvent.date)} • {activeEvent.expectedGuests} Guests
+            </p>
+          </div>
+        </div>
+
         {/* Navigation Tabs */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <Tabs
@@ -824,7 +849,7 @@ export default function HomePage() {
               onClick={() => setIsAIChatOpen(true)}
               className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-brand-50 to-indigo-50 dark:from-brand-950/60 dark:to-indigo-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 hover:shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             >
-              <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+              <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" aria-hidden="true" />
               <span>Ask Gemini</span>
             </button>
           </div>
@@ -835,7 +860,8 @@ export default function HomePage() {
           role="tabpanel"
           id={`panel-${activeTab}`}
           aria-labelledby={`tab-${activeTab}`}
-          className="flex-1"
+          tabIndex={0}
+          className="flex-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-500 rounded-xl"
         >
           {activeTab === "overview" && (
             <DashboardOverview
@@ -885,9 +911,9 @@ export default function HomePage() {
             <div className="flex flex-col gap-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                     Your Events Directory
-                  </h3>
+                  </h2>
                   <p className="text-xs text-slate-500">
                     Switch active event or create custom events
                   </p>
@@ -895,9 +921,9 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4" aria-hidden="true" />
                   <span>Create New Event</span>
                 </button>
               </div>

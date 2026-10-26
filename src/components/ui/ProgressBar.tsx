@@ -20,7 +20,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   className,
   ...props
 }) => {
-  const percentage = Math.min(100, Math.max(0, Math.round((value / max) * 100)));
+  const validValue = typeof value === "number" && !isNaN(value) ? value : 0;
+  const validMax = typeof max === "number" && !isNaN(max) && max > 0 ? max : 100;
+  const percentage = Math.min(100, Math.max(0, Math.round((validValue / validMax) * 100)));
 
   const sizeStyles = {
     sm: "h-1.5",
@@ -48,6 +50,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         aria-valuenow={percentage}
         aria-valuemin={0}
         aria-valuemax={100}
+        aria-valuetext={`${percentage} percent`}
         aria-label={label || "Planning progress"}
         className={cn(
           "w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden",

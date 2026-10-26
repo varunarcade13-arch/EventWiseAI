@@ -42,14 +42,19 @@ export const CardHeader: React.FC<HTMLAttributes<HTMLDivElement>> = ({
   </div>
 );
 
-export const CardTitle: React.FC<HTMLAttributes<HTMLHeadingElement>> = ({
+export interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
+  as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+}
+
+export const CardTitle: React.FC<CardTitleProps> = ({
   className,
   children,
+  as: Component = "h3",
   ...props
 }) => (
-  <h3 className={cn("text-base font-semibold text-slate-900 dark:text-slate-100", className)} {...props}>
+  <Component className={cn("text-base font-semibold text-slate-900 dark:text-slate-100", className)} {...props}>
     {children}
-  </h3>
+  </Component>
 );
 
 export const CardDescription: React.FC<HTMLAttributes<HTMLParagraphElement>> = ({

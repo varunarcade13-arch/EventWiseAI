@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { VendorCategory, VendorItem, VendorStatus } from "@/types/event";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 export interface AddVendorModalProps {
   isOpen: boolean;
@@ -29,11 +29,13 @@ export const AddVendorModal: React.FC<AddVendorModalProps> = ({
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       setError("Vendor name is required.");
+      nameInputRef.current?.focus();
       return;
     }
 
@@ -76,6 +78,7 @@ export const AddVendorModal: React.FC<AddVendorModalProps> = ({
     >
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <Input
+          ref={nameInputRef}
           label="Vendor / Business Name"
           placeholder="e.g. Lumina Wedding Films, Spice Symphony"
           value={name}

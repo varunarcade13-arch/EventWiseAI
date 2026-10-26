@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useId, useRef } from "react";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -19,23 +19,81 @@ export const Modal: React.FC<ModalProps> = ({
   size = "md",
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedElement = useRef<HTMLElement | null>(null);
+  const uniqueId = useId();
+  const titleId = `modal-title-${uniqueId}`;
+  const descriptionId = description ? `modal-desc-${uniqueId}` : undefined;
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-
     if (isOpen) {
+      previouslyFocusedElement.current = document.activeElement as HTMLElement;
       document.body.style.overflow = "hidden";
-      window.addEventListener("keydown", handleKeyDown);
-    }
 
-    return () => {
-      document.body.style.overflow = "unset";
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+      // Set initial focus inside modal if not already focused inside
+      if (!modalRef.current?.contains(document.activeElement)) {
+        const firstInput = modalRef.current?.querySelector<HTMLElement>(
+          'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])'
+        );
+        if (firstInput) {
+          firstInput.focus();
+        } else {
+          const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable && focusable.length > 0) {
+            focusable[0]?.focus();
+          } else {
+            modalRef.current?.focus();
+          }
+        }
+      }
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onClose();
+          return;
+        }
+
+        if (event.key === "Tab" && modalRef.current) {
+          const focusable = Array.from(
+            modalRef.current.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )
+          ).filter((el) => el.offsetParent !== null);
+
+          if (focusable.length === 0) {
+            event.preventDefault();
+            return;
+          }
+
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (event.shiftKey) {
+            if (document.activeElement === first || !modalRef.current.contains(document.activeElement)) {
+              event.preventDefault();
+              last?.focus();
+            }
+          } else {
+            if (document.activeElement === last || !modalRef.current.contains(document.activeElement)) {
+              event.preventDefault();
+              first?.focus();
+            }
+          }
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        document.body.style.overflow = "unset";
+        window.removeEventListener("keydown", handleKeyDown);
+        if (previouslyFocusedElement.current && typeof previouslyFocusedElement.current.focus === "function") {
+          previouslyFocusedElement.current.focus();
+        }
+      };
+    }
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -52,8 +110,8 @@ export const Modal: React.FC<ModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="modal-title"
-      aria-describedby={description ? "modal-description" : undefined}
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -62,22 +120,23 @@ export const Modal: React.FC<ModalProps> = ({
     >
       <div
         ref={modalRef}
+        tabIndex={-1}
         className={cn(
-          "w-full bg-white dark:bg-slate-900 rounded-2xl shadow-glass border border-slate-200 dark:border-slate-800 p-6 max-h-[90vh] flex flex-col overflow-hidden animate-fade-in",
+          "w-full bg-white dark:bg-slate-900 rounded-2xl shadow-glass border border-slate-200 dark:border-slate-800 p-6 max-h-[90vh] flex flex-col overflow-hidden animate-fade-in focus:outline-none",
           sizeStyles[size]
         )}
       >
         <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2
-              id="modal-title"
+              id={titleId}
               className="text-lg font-bold text-slate-900 dark:text-slate-100"
             >
               {title}
             </h2>
             {description && (
               <p
-                id="modal-description"
+                id={descriptionId}
                 className="text-xs text-slate-500 dark:text-slate-400 mt-1"
               >
                 {description}

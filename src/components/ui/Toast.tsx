@@ -50,7 +50,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            role="status"
+            role={toast.type === "error" ? "alert" : "status"}
+            aria-live={toast.type === "error" ? "assertive" : "polite"}
             className={cn(
               "pointer-events-auto flex items-center justify-between p-4 rounded-xl shadow-glass border transition-all animate-fade-in text-sm font-medium",
               toast.type === "success" &&
@@ -103,10 +104,10 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
             <button
               type="button"
               onClick={() => removeToast(toast.id)}
-              className="ml-3 p-1 rounded-md text-current opacity-70 hover:opacity-100 focus:outline-none focus-visible:ring-2"
+              className="ml-3 p-1 rounded-md text-current opacity-70 hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-current"
               aria-label="Dismiss notification"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <svg className="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>

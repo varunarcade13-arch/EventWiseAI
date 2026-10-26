@@ -100,13 +100,18 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
         </CardHeader>
 
         {/* Category Filter Chips */}
-        <div className="flex items-center gap-1.5 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800 overflow-x-auto text-xs no-scrollbar">
+        <div
+          role="group"
+          aria-label="Filter vendors by category"
+          className="flex items-center gap-1.5 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800 overflow-x-auto text-xs no-scrollbar"
+        >
           {categoriesList.map((cat) => (
             <button
               key={cat.id}
               type="button"
+              aria-pressed={selectedCategory === cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                 selectedCategory === cat.id
                   ? "bg-brand-600 text-white"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
@@ -152,7 +157,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                         aria-label={`Delete vendor ${vendor.name}`}
                         className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </div>
 
@@ -181,19 +186,19 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                     <div className="space-y-1 text-xs text-slate-500 mb-3">
                       {vendor.contactPerson && (
                         <div className="flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-slate-400" />
+                          <User className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                           <span>{vendor.contactPerson}</span>
                         </div>
                       )}
                       {vendor.phone && (
                         <div className="flex items-center gap-1.5">
-                          <Phone className="w-3.5 h-3.5 text-slate-400" />
+                          <Phone className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                           <span>{vendor.phone}</span>
                         </div>
                       )}
                       {vendor.email && (
                         <div className="flex items-center gap-1.5">
-                          <Mail className="w-3.5 h-3.5 text-slate-400" />
+                          <Mail className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                           <span>{vendor.email}</span>
                         </div>
                       )}
@@ -219,7 +224,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                           e.target.value as VendorStatus
                         )
                       }
-                      className="text-xs bg-slate-100 dark:bg-slate-800 border-none rounded-lg px-2.5 py-1 font-semibold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
+                      className="text-xs bg-slate-100 dark:bg-slate-800 border-none rounded-lg px-2.5 py-1 font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 cursor-pointer"
                     >
                       <option value="not_contacted">Not Contacted</option>
                       <option value="contacted">In Discussion</option>

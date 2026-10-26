@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
         <p>© {new Date().getFullYear()} EventWise AI. Built with Google Gemini & Next.js.</p>
         <div className="flex items-center gap-4">
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
             Vercel Ready
           </span>
           <span>•</span>

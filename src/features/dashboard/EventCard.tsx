@@ -35,6 +35,8 @@ export const EventCard: React.FC<EventCardProps> = ({
     <Card
       role="button"
       tabIndex={0}
+      aria-pressed={isActive}
+      aria-label={`Select event: ${event.name}, ${event.type}, ${event.expectedGuests} guests, scheduled for ${formatDate(event.date)}`}
       onClick={() => onSelect(event.id)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -42,7 +44,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           onSelect(event.id);
         }
       }}
-      className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:border-brand-400 dark:hover:border-brand-600 ${
+      className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:border-brand-400 dark:hover:border-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
         isActive
           ? "border-2 border-brand-600 dark:border-brand-500 ring-2 ring-brand-500/20 bg-brand-50/20 dark:bg-brand-950/20"
           : ""
@@ -74,15 +76,15 @@ export const EventCard: React.FC<EventCardProps> = ({
 
       <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400 mb-4">
         <div className="flex items-center gap-1.5 truncate">
-          <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
           <span className="truncate">{formatDate(event.date)}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
           <span>{event.expectedGuests} guests</span>
         </div>
         <div className="flex items-center gap-1.5 col-span-2 truncate">
-          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" aria-hidden="true" />
           <span className="truncate">{event.location}</span>
         </div>
       </div>
@@ -98,7 +100,7 @@ export const EventCard: React.FC<EventCardProps> = ({
 
       <div className="mt-3 flex items-center justify-end text-xs font-semibold text-brand-600 dark:text-brand-400 group">
         <span>{isActive ? "Currently viewing" : "Open event"}</span>
-        <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
+        <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
       </div>
     </Card>
   );

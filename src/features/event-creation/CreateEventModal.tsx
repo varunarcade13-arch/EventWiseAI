@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/Toast";
 import { EventValidator } from "@/domain/services/EventValidator";
 import { CurrencyCode, EventType } from "@/types/event";
 import { Sparkles } from "lucide-react";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 export interface CreateEventModalProps {
   isOpen: boolean;
@@ -30,6 +30,11 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 }) => {
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const locationInputRef = useRef<HTMLInputElement>(null);
+  const guestsInputRef = useRef<HTMLInputElement>(null);
+  const budgetInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -71,6 +76,19 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
     if (!validation.isValid) {
       setErrors(validation.errors);
       showToast("Please correct the form errors before submitting.", "error");
+
+      // Focus first invalid input (WCAG 3.3.1, 3.3.3)
+      if (validation.errors.name) {
+        nameInputRef.current?.focus();
+      } else if (validation.errors.date) {
+        dateInputRef.current?.focus();
+      } else if (validation.errors.location) {
+        locationInputRef.current?.focus();
+      } else if (validation.errors.expectedGuests) {
+        guestsInputRef.current?.focus();
+      } else if (validation.errors.totalBudget) {
+        budgetInputRef.current?.focus();
+      }
       return;
     }
 
@@ -119,6 +137,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         {/* Event Name */}
         <Input
+          ref={nameInputRef}
           label="Event Name"
           placeholder="e.g. Maya & Liam's Sunset Wedding"
           value={formData.name}
@@ -144,6 +163,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
           {/* Event Date */}
           <Input
+            ref={dateInputRef}
             label="Event Date"
             type="date"
             value={formData.date}
@@ -155,6 +175,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
         {/* Location */}
         <Input
+          ref={locationInputRef}
           label="Location / City / Venue"
           placeholder="e.g. The Taj Gateway, Bangalore"
           value={formData.location}
@@ -166,6 +187,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Expected Guests */}
           <Input
+            ref={guestsInputRef}
             label="Expected Guests"
             type="number"
             min="1"
@@ -191,6 +213,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
           {/* Total Budget */}
           <Input
+            ref={budgetInputRef}
             label="Total Budget"
             type="number"
             min="0"

@@ -126,7 +126,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         </CardHeader>
 
         {/* Filter buttons */}
-        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800 overflow-x-auto text-xs">
+        <div
+          role="group"
+          aria-label="Filter tasks by status"
+          className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800 overflow-x-auto text-xs"
+        >
           <span className="text-slate-400 font-semibold uppercase tracking-wider text-[11px] mr-1">
             Filter:
           </span>
@@ -156,8 +160,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
             <button
               key={btn.id}
               type="button"
+              aria-pressed={filterStatus === btn.id}
               onClick={() => setFilterStatus(btn.id)}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                 filterStatus === btn.id
                   ? "bg-brand-600 text-white"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
@@ -209,7 +214,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       </p>
                       <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-500">
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
                           <span className={isOverdue ? "text-rose-600 font-bold" : ""}>
                             {formatDate(task.dueDate)}
                             {isOverdue && " (Overdue)"}
@@ -243,7 +248,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       onChange={(e) =>
                         onUpdateTaskStatus(task.id, e.target.value as TaskStatus)
                       }
-                      className="text-xs bg-slate-100 dark:bg-slate-800 border-none rounded-lg px-2 py-1 font-medium text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
+                      className="text-xs bg-slate-100 dark:bg-slate-800 border-none rounded-lg px-2 py-1 font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 cursor-pointer"
                     >
                       <option value="not_started">Not Started</option>
                       <option value="in_progress">In Progress</option>
@@ -256,7 +261,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       aria-label={`Delete task ${task.title}`}
                       className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
                 </div>

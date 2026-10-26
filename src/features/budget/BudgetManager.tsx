@@ -150,36 +150,58 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             </div>
           </CardHeader>
 
-          {/* Color stacked distribution bar */}
-          <div
-            className="w-full h-4 rounded-full overflow-hidden flex bg-slate-100 dark:bg-slate-800 mb-4"
-            aria-label="Category allocation bar"
-          >
-            {event.budgetCategories.map((cat, idx) => {
-              const pct =
-                summary.totalAllocated > 0
-                  ? (cat.allocated / summary.totalAllocated) * 100
-                  : 0;
-              const palette = [
-                "bg-indigo-500",
-                "bg-purple-500",
-                "bg-emerald-500",
-                "bg-amber-500",
-                "bg-rose-500",
-                "bg-cyan-500",
-                "bg-blue-600",
-                "bg-fuchsia-500",
-              ];
-              const color = palette[idx % palette.length];
-              return (
-                <div
-                  key={cat.id}
-                  style={{ width: `${pct}%` }}
-                  className={`${color} h-full transition-all duration-300 relative group`}
-                  title={`${cat.name}: ${Math.round(pct)}%`}
-                />
-              );
-            })}
+          {/* Color stacked distribution bar with accessible text representation */}
+          <div className="mb-4">
+            <div
+              role="img"
+              aria-label={`Visual budget allocation breakdown across ${event.budgetCategories.length} categories for total allocated ${formatCurrency(summary.totalAllocated, event.currency)}`}
+              className="w-full h-4 rounded-full overflow-hidden flex bg-slate-100 dark:bg-slate-800"
+            >
+              {event.budgetCategories.map((cat, idx) => {
+                const pct =
+                  summary.totalAllocated > 0
+                    ? (cat.allocated / summary.totalAllocated) * 100
+                    : 0;
+                const palette = [
+                  "bg-indigo-500",
+                  "bg-purple-500",
+                  "bg-emerald-500",
+                  "bg-amber-500",
+                  "bg-rose-500",
+                  "bg-cyan-500",
+                  "bg-blue-600",
+                  "bg-fuchsia-500",
+                ];
+                const color = palette[idx % palette.length];
+                return (
+                  <div
+                    key={cat.id}
+                    style={{ width: `${pct}%` }}
+                    className={`${color} h-full transition-all duration-300 relative group`}
+                    title={`${cat.name}: ${Math.round(pct)}%`}
+                    aria-hidden="true"
+                  />
+                );
+              })}
+            </div>
+
+            {/* Screen-reader accessible textual representation of the chart (WCAG 1.1.1) */}
+            <div className="sr-only">
+              <h4>Budget breakdown summary:</h4>
+              <ul>
+                {event.budgetCategories.map((cat) => {
+                  const pct =
+                    summary.totalAllocated > 0
+                      ? Math.round((cat.allocated / summary.totalAllocated) * 100)
+                      : 0;
+                  return (
+                    <li key={cat.id}>
+                      {cat.name}: {formatCurrency(cat.allocated, event.currency)} ({pct}% of allocated budget)
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
 
           {/* Categories Table */}
@@ -235,7 +257,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                           aria-label={`Delete ${cat.name} category`}
                           className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </button>
                       </td>
                     </tr>
@@ -251,11 +273,11 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
       {event.budgetCategories.length === 0 && (
         <Card className="text-center py-12 px-4 border-dashed border-2">
           <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-3">
-            <TrendingUp className="w-6 h-6" />
+            <TrendingUp className="w-6 h-6" aria-hidden="true" />
           </div>
-          <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
             No budget categories yet
-          </h4>
+          </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mt-1 mb-5">
             Break down your {formatCurrency(event.totalBudget, event.currency)} budget across venue, catering, and decor, or let Gemini auto-optimize it.
           </p>

@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { TaskPriority, TaskStatus, TimelineTask } from "@/types/event";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 export interface AddTaskModalProps {
   isOpen: boolean;
@@ -25,15 +25,19 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const [assignedTo, setAssignedTo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       setError("Task title is required.");
+      titleInputRef.current?.focus();
       return;
     }
     if (!dueDate) {
       setError("Due date is required.");
+      dateInputRef.current?.focus();
       return;
     }
 
@@ -70,6 +74,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
     >
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <Input
+          ref={titleInputRef}
           label="Task Title"
           placeholder="e.g. Schedule cake tasting, Pay venue advance deposit"
           value={title}
@@ -80,6 +85,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
 
         <div className="grid grid-cols-2 gap-4">
           <Input
+            ref={dateInputRef}
             label="Due Date"
             type="date"
             value={dueDate}

@@ -74,10 +74,10 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
             {/* Potential Savings */}
             {budgetAnalysis.potentialSavings?.length > 0 && (
               <div>
-                <h4 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                  <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
                   Potential Savings Opportunities
-                </h4>
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {budgetAnalysis.potentialSavings.map((saving, idx) => (
                     <Card key={idx} className="p-3 bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900">
@@ -101,10 +101,10 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
             {/* Redistribution Suggestions */}
             {budgetAnalysis.redistributionSuggestions?.length > 0 && (
               <div>
-                <h4 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+                <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-brand-500" aria-hidden="true" />
                   Suggested Rebalancing
-                </h4>
+                </h3>
                 <div className="space-y-2">
                   {budgetAnalysis.redistributionSuggestions.map((item, idx) => (
                     <div
@@ -144,10 +144,10 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
             {/* Themes */}
             {ideasPlan.themes?.length > 0 && (
               <div>
-                <h4 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                  <Lightbulb className="w-3.5 h-3.5 text-purple-500" />
+                <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+                  <Lightbulb className="w-3.5 h-3.5 text-purple-500" aria-hidden="true" />
                   Curated Themes
-                </h4>
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {ideasPlan.themes.map((th, i) => (
                     <span
@@ -165,9 +165,9 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {ideasPlan.activities?.length > 0 && (
                 <Card className="p-4">
-                  <h5 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                     Activities & Entertainment
-                  </h5>
+                  </h4>
                   <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 list-disc pl-4">
                     {ideasPlan.activities.map((act, i) => (
                       <li key={i}>{act}</li>
@@ -178,9 +178,9 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
 
               {ideasPlan.foodIdeas?.length > 0 && (
                 <Card className="p-4">
-                  <h5 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                     Culinary & Food Touches
-                  </h5>
+                  </h4>
                   <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 list-disc pl-4">
                     {ideasPlan.foodIdeas.map((f, i) => (
                       <li key={i}>{f}</li>
@@ -191,9 +191,9 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
 
               {ideasPlan.decorationIdeas?.length > 0 && (
                 <Card className="p-4 sm:col-span-2">
-                  <h5 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                     Decoration & Aesthetic Accents
-                  </h5>
+                  </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-300">
                     {ideasPlan.decorationIdeas.map((d, i) => (
                       <div key={i} className="flex items-start gap-1.5">
@@ -223,10 +223,10 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
                 >
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-2">
-                      <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0" />
-                      <h5 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                      <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0" aria-hidden="true" />
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                         {r.risk}
-                      </h5>
+                      </h4>
                     </div>
                     <Badge
                       variant={

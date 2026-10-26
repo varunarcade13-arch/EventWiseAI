@@ -47,7 +47,10 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isApplyingPlan, setIsApplyingPlan] = useState(false);
+  const [srAnnouncement, setSrAnnouncement] = useState("");
 
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedElement = useRef<HTMLElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -57,10 +60,66 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      previouslyFocusedElement.current = document.activeElement as HTMLElement;
+      document.body.style.overflow = "hidden";
       scrollToBottom();
-      setTimeout(() => inputRef.current?.focus(), 150);
+      if (!drawerRef.current?.contains(document.activeElement)) {
+        inputRef.current?.focus();
+      }
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onClose();
+          return;
+        }
+
+        if (event.key === "Tab" && drawerRef.current) {
+          const focusable = Array.from(
+            drawerRef.current.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )
+          ).filter((el) => el.offsetParent !== null);
+
+          if (focusable.length === 0) {
+            event.preventDefault();
+            return;
+          }
+
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (event.shiftKey) {
+            if (document.activeElement === first || !drawerRef.current.contains(document.activeElement)) {
+              event.preventDefault();
+              last?.focus();
+            }
+          } else {
+            if (document.activeElement === last || !drawerRef.current.contains(document.activeElement)) {
+              event.preventDefault();
+              first?.focus();
+            }
+          }
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        document.body.style.overflow = "unset";
+        window.removeEventListener("keydown", handleKeyDown);
+        if (previouslyFocusedElement.current && typeof previouslyFocusedElement.current.focus === "function") {
+          previouslyFocusedElement.current.focus();
+        }
+      };
     }
-  }, [isOpen, messages]);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+    }
+  }, [messages, isOpen]);
 
   // Suggested quick prompts as specified in prompt
   const suggestedPrompts = [
@@ -81,6 +140,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
     if (!textToSend || isLoading) return;
 
     setErrorMessage(null);
+    setSrAnnouncement("AI is formulating your event response...");
     const userMsg: ChatEntry = {
       id: `user_${Date.now()}`,
       role: "user",
@@ -130,10 +190,12 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
+      setSrAnnouncement("AI finished responding. New message available in chat history.");
     } catch (err) {
       const errorStr =
         err instanceof Error ? err.message : "An unexpected error occurred.";
       setErrorMessage(errorStr);
+      setSrAnnouncement("");
     } finally {
       setIsLoading(false);
     }
@@ -144,18 +206,17 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
     try {
       setIsApplyingPlan(true);
       await onApplyPlan(plan);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `applied_${Date.now()}`,
-          role: "assistant",
-          content: "Plan applied successfully to your active event!",
-        },
-      ]);
+      const appliedNotice: ChatEntry = {
+        id: `applied_${Date.now()}`,
+        role: "assistant",
+        content: "Plan applied successfully to your active event!",
+      };
+      setMessages((prev) => [...prev, appliedNotice]);
+      setSrAnnouncement("Event plan applied successfully to your active event!");
     } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : "Failed to apply plan to event."
-      );
+      const errText = err instanceof Error ? err.message : "Failed to apply plan to event.";
+      setErrorMessage(errText);
+      setSrAnnouncement("");
     } finally {
       setIsApplyingPlan(false);
     }
@@ -168,22 +229,37 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
       className="fixed inset-0 z-50 overflow-hidden bg-slate-950/50 backdrop-blur-sm flex justify-end animate-fade-in"
       role="dialog"
       aria-modal="true"
-      aria-label="EventWise AI Assistant"
+      aria-labelledby="ai-chat-drawer-title"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-md sm:max-w-lg bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-l border-slate-200 dark:border-slate-800">
+      {/* Polite live region for screen-reader announcements */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {srAnnouncement}
+      </div>
+
+      <div
+        ref={drawerRef}
+        tabIndex={-1}
+        className="w-full max-w-md sm:max-w-lg bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-l border-slate-200 dark:border-slate-800 focus:outline-none"
+      >
         {/* Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-850/60">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 via-indigo-600 to-accent-500 flex items-center justify-center text-white shadow-glow">
+            <div
+              className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 via-indigo-600 to-accent-500 flex items-center justify-center text-white shadow-glow"
+              aria-hidden="true"
+            >
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+              <h2
+                id="ai-chat-drawer-title"
+                className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5"
+              >
                 EventWise AI Assistant
-              </h3>
+              </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 {activeEvent ? `Target: ${activeEvent.name}` : "General Planning"}
               </p>
@@ -195,12 +271,17 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             aria-label="Close AI assistant"
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
         {/* Message stream */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div
+          role="log"
+          aria-label="Conversation messages"
+          tabIndex={0}
+          className="flex-1 overflow-y-auto p-4 space-y-4 focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-500"
+        >
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -209,7 +290,10 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
               }`}
             >
               {msg.role === "assistant" && (
-                <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0 mt-0.5">
+                <div
+                  className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0 mt-0.5"
+                  aria-hidden="true"
+                >
                   <Bot className="w-4 h-4" />
                 </div>
               )}
@@ -227,7 +311,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                 {msg.suggestedPlan && (
                   <Card className="mt-3 p-3 bg-white dark:bg-slate-900 border-brand-300 dark:border-brand-700">
                     <div className="flex items-center gap-1.5 font-bold text-xs text-brand-700 dark:text-brand-300 mb-1">
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
                       <span>AI Generated Complete Event Plan</span>
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
@@ -235,11 +319,11 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                     </p>
                     <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 mb-3">
                       <span className="flex items-center gap-1">
-                        <ListCheck className="w-3 h-3 text-brand-500" />
+                        <ListCheck className="w-3 h-3 text-brand-500" aria-hidden="true" />
                         {msg.suggestedPlan.estimatedBudget.length} budget items
                       </span>
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-brand-500" />
+                        <Calendar className="w-3 h-3 text-brand-500" aria-hidden="true" />
                         {msg.suggestedPlan.timeline.length} milestones
                       </span>
                     </div>
@@ -251,7 +335,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                         onClick={() => handleApplyPlan(msg.suggestedPlan!)}
                         isLoading={isApplyingPlan}
                         className="w-full text-xs"
-                        leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                        leftIcon={<CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />}
                       >
                         Apply Plan to {activeEvent.name}
                       </Button>
@@ -261,7 +345,10 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
               </div>
 
               {msg.role === "user" && (
-                <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 mt-0.5">
+                <div
+                  className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 mt-0.5"
+                  aria-hidden="true"
+                >
                   <User className="w-4 h-4" />
                 </div>
               )}
@@ -270,12 +357,15 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
 
           {/* Loading indicator */}
           {isLoading && (
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3" role="status">
+              <div
+                className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-950 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0"
+                aria-hidden="true"
+              >
                 <Bot className="w-4 h-4 animate-pulse" />
               </div>
               <div className="p-3 rounded-2xl rounded-tl-none bg-slate-100 dark:bg-slate-800 text-xs text-slate-500 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-brand-500 animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-brand-500 animate-ping" aria-hidden="true" />
                 <span>Gemini is formulating event recommendations...</span>
               </div>
             </div>
@@ -287,7 +377,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
               role="alert"
               className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-900 text-xs text-rose-800 dark:text-rose-200 flex items-start gap-2"
             >
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" aria-hidden="true" />
               <div>
                 <strong>AI Error:</strong> {errorMessage}
               </div>
@@ -298,7 +388,11 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
         </div>
 
         {/* Suggested Prompt Chips */}
-        <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+        <div
+          role="region"
+          aria-label="Suggested prompts"
+          className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50"
+        >
           <p className="text-[11px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
             Suggested Prompts:
           </p>
@@ -309,7 +403,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
                 type="button"
                 onClick={() => handleSend(prompt)}
                 disabled={isLoading}
-                className="px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap bg-white dark:bg-slate-800 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-500 disabled:opacity-50 shrink-0"
+                className="px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap bg-white dark:bg-slate-800 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-50 shrink-0"
               >
                 {prompt}
               </button>
@@ -325,14 +419,19 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
           }}
           className="p-3 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 bg-white dark:bg-slate-900"
         >
+          <label htmlFor="ai-chat-input" className="sr-only">
+            Message EventWise AI Assistant
+          </label>
           <input
             ref={inputRef}
+            id="ai-chat-input"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask anything about your event plan..."
+            aria-label="Ask anything about your event plan"
             disabled={isLoading}
-            className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+            className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           />
           <Button
             type="submit"
@@ -342,7 +441,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             aria-label="Send message to AI assistant"
             className="px-3"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4" aria-hidden="true" />
           </Button>
         </form>
       </div>
