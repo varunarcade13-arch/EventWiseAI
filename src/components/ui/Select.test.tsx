@@ -50,4 +50,12 @@ describe("Select component", () => {
     const plain = screen.getByRole("combobox", { name: "Plain" });
     expect(plain).not.toHaveAttribute("id");
   });
+
+  it("renders required indicator and handles unlabelled select with error and helper text", () => {
+    render(<Select label="Required Select" options={options} required />);
+    expect(screen.getByText("*")).toBeInTheDocument();
+
+    render(<Select options={options} error="Direct select error" helperText="Direct helper" aria-label="Direct" />);
+    expect(screen.getByText("Direct select error")).toBeInTheDocument();
+  });
 });

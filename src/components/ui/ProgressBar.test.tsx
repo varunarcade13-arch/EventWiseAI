@@ -22,5 +22,9 @@ describe("ProgressBar component", () => {
 
     rerender(<ProgressBar value={50} color="amber" />);
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "50");
+
+    // NaN value and max 0
+    rerender(<ProgressBar value={NaN} max={0} />);
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
   });
 });

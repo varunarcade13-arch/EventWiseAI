@@ -116,5 +116,14 @@ describe("PromptBuilder", () => {
     expect(promptWithEmptyContext).toContain("Date: Not set");
     expect(promptWithEmptyContext).toContain("Location: Not set");
     expect(promptWithEmptyContext).toContain("Categories: None");
+
+    // Test with >20 messages to exercise bounding slice
+    const longMessages = Array.from({ length: 25 }, (_, i) => ({
+      role: "user" as const,
+      content: `Message ${i}`,
+    }));
+    const longPrompt = PromptBuilder.buildChatPrompt(longMessages);
+    expect(longPrompt).toContain("Message 24");
+    expect(longPrompt).not.toContain("Message 0"); // Oldest messages pruned
   });
 });

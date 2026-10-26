@@ -116,4 +116,50 @@ describe("CreateEventModal component", () => {
     await user.click(screen.getByRole("button", { name: /create event/i }));
     expect(screen.getByText("Failed to create event")).toBeInTheDocument();
   });
+
+  it("shifts focus to respective field when date, location, guests, or budget fails validation", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+
+    render(
+      <ToastProvider>
+        <CreateEventModal
+          isOpen={true}
+          onClose={() => {}}
+          onSubmit={handleSubmit}
+        />
+      </ToastProvider>
+    );
+
+    const nameInput = screen.getByLabelText(/event name/i);
+    const dateInput = screen.getByLabelText(/event date/i);
+    const locInput = screen.getByLabelText(/location/i);
+    const guestsInput = screen.getByLabelText(/expected guests/i);
+    const budgetInput = screen.getByLabelText(/total budget/i);
+
+    // 1. Missing date focuses dateInput
+    await user.type(nameInput, "Party");
+    await user.click(screen.getByRole("button", { name: /create event/i }));
+    expect(document.activeElement).toBe(dateInput);
+
+    // 2. Missing location focuses locationInput
+    await user.type(dateInput, "2026-12-15");
+    await user.click(screen.getByRole("button", { name: /create event/i }));
+    expect(document.activeElement).toBe(locInput);
+
+    // 3. Invalid guests focuses guestsInput
+    await user.type(locInput, "Plaza");
+    await user.clear(guestsInput);
+    await user.type(guestsInput, "0");
+    await user.click(screen.getByRole("button", { name: /create event/i }));
+    expect(document.activeElement).toBe(guestsInput);
+
+    // 4. Invalid budget focuses budgetInput
+    await user.clear(guestsInput);
+    await user.type(guestsInput, "50");
+    await user.clear(budgetInput);
+    await user.type(budgetInput, "-10");
+    await user.click(screen.getByRole("button", { name: /create event/i }));
+    expect(document.activeElement).toBe(budgetInput);
+  });
 });

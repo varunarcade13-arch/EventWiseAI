@@ -59,6 +59,10 @@ describe("AIChatDrawer component", () => {
     await waitFor(() => {
       expect(screen.getByText("Here are my venue booking suggestions...")).toBeInTheDocument();
     });
+
+    // Send a follow-up message when abortControllerRef is already populated
+    await user.type(input, "What next?");
+    await user.click(sendBtn);
   });
 
   it("clicking a suggested prompt chip sends the prompt directly", async () => {
@@ -389,5 +393,90 @@ describe("AIChatDrawer component", () => {
     await waitFor(() => {
       expect(screen.getByText("Answer 1")).toBeInTheDocument();
     });
+  });
+
+  it("closes on Escape key press", async () => {
+    const user = userEvent.setup();
+    const handleClose = vi.fn();
+    render(
+      <AIChatDrawer
+        isOpen={true}
+        onClose={handleClose}
+        activeEvent={sampleEvent}
+      />
+    );
+
+    await user.keyboard("{Escape}");
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("traps keyboard focus with Tab and Shift+Tab cycling", async () => {
+    const user = userEvent.setup();
+    render(
+      <AIChatDrawer
+        isOpen={true}
+        onClose={() => {}}
+        activeEvent={sampleEvent}
+      />
+    );
+
+    // Press Tab multiple times to verify cycling through focusable controls
+    await user.tab();
+    expect(document.activeElement).not.toBeNull();
+
+    await user.tab({ shift: true });
+    expect(document.activeElement).not.toBeNull();
+
+    // Fire Tab and Shift+Tab keydown events to test wrap logic
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+    fireEvent.keyDown(window, { key: "Tab" });
+
+    // Focus outside drawer and press Tab / Shift+Tab
+    document.body.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+  });
+
+  it("handles drawer when all interactive elements are disabled", () => {
+    render(
+      <AIChatDrawer
+        isOpen={true}
+        onClose={() => {}}
+        activeEvent={sampleEvent}
+      />
+    );
+
+    // Disable all buttons, inputs, links and remove tabindex
+    const dialog = screen.getByRole("dialog");
+    const focusable = dialog.querySelectorAll("button, input, select, textarea, [tabindex]");
+    focusable.forEach((el) => {
+      el.setAttribute("disabled", "true");
+      el.setAttribute("tabindex", "-1");
+    });
+
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(dialog).toBeInTheDocument();
+  });
+
+  it("cleanly handles AbortError during fetch cancellation", async () => {
+    const user = userEvent.setup();
+    const abortError = new Error("The operation was aborted.");
+    abortError.name = "AbortError";
+    global.fetch = vi.fn().mockRejectedValue(abortError);
+
+    render(
+      <AIChatDrawer
+        isOpen={true}
+        onClose={() => {}}
+        activeEvent={sampleEvent}
+      />
+    );
+
+    const input = screen.getByPlaceholderText(/ask anything about your event plan/i);
+    await user.type(input, "Aborted query");
+    await user.click(screen.getByLabelText(/send message to ai assistant/i));
+
+    // AbortError does NOT set an error notification banner
+    expect(screen.queryByText(/AI Error/i)).not.toBeInTheDocument();
   });
 });

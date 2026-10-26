@@ -209,7 +209,9 @@ Categories: ${context.budgetCategories?.map((c) => c.name).join(", ") || "None"}
 `
       : "No specific event selected.";
 
-    const conversationHistory = messages
+    // Bound conversation history to last 20 messages to prevent unbounded token usage
+    const boundedMessages = messages.length > 20 ? messages.slice(-20) : messages;
+    const conversationHistory = boundedMessages
       .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
       .join("\n\n");
 

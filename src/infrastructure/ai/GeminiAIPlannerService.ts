@@ -40,9 +40,20 @@ export class GeminiAIPlannerService implements AIPlannerService {
     prompt: string,
     timeoutMs: number = 25000
   ): Promise<string> {
-    const client = this.ensureConfigured();
-    const model = client.getGenerativeModel({ model: this.modelName });
+    if (!prompt || prompt.length > 25000) {
+      throw new Error("Prompt exceeds maximum permissible length of 25,000 characters.");
+    }
 
+    const client = this.ensureConfigured();
+    const model = client.getGenerativeModel({
+      model: this.modelName,
+      generationConfig: {
+        maxOutputTokens: 3072,
+        temperature: 0.7,
+      },
+    });
+
+    let timer: NodeJS.Timeout | undefined;
     const callPromise = model.generateContent(prompt).then((result) => {
       const response = result.response;
       const text = response.text();
@@ -53,8 +64,7 @@ export class GeminiAIPlannerService implements AIPlannerService {
     });
 
     const timeoutPromise = new Promise<never>((_, reject) => {
-      const timer = setTimeout(() => {
-        clearTimeout(timer);
+      timer = setTimeout(() => {
         reject(
           new Error(
             "Gemini request timed out after 25 seconds. Please try again."
@@ -63,7 +73,13 @@ export class GeminiAIPlannerService implements AIPlannerService {
       }, timeoutMs);
     });
 
-    return await Promise.race([callPromise, timeoutPromise]);
+    try {
+      return await Promise.race([callPromise, timeoutPromise]);
+    } finally {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    }
   }
 
   public async generateEventPlan(input: EventPlanningInput): Promise<EventPlan> {

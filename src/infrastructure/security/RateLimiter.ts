@@ -22,6 +22,15 @@ export class RateLimiter {
     remaining: number;
     resetTime: number;
   } {
+    // Proactively clean up if tracking many clients to prevent memory growth
+    if (this.requests.size > 500) {
+      this.cleanup(now);
+      if (this.requests.size > 1000) {
+        const oldestKey = this.requests.keys().next().value;
+        if (oldestKey) this.requests.delete(oldestKey);
+      }
+    }
+
     const windowStart = now - this.windowMs;
     const timestamps = this.requests.get(identifier) ?? [];
 

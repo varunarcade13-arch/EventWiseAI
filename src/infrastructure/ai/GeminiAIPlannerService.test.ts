@@ -34,6 +34,22 @@ describe("GeminiAIPlannerService", () => {
     ).rejects.toThrow("Gemini API key is not configured.");
   });
 
+  it("throws error if prompt length exceeds maximum allowed characters", async () => {
+    const service = new GeminiAIPlannerService("valid_key");
+    await expect(
+      service.generateEventPlan({
+        eventName: "E",
+        eventType: "wedding",
+        eventDate: "2027-01-01",
+        location: "L",
+        expectedGuests: 100,
+        totalBudget: 1000,
+        currency: "INR",
+        specialRequirements: "A".repeat(30000),
+      })
+    ).rejects.toThrow("Prompt exceeds maximum permissible length");
+  });
+
   it("successfully calls Gemini and validates event plan", async () => {
     const mockPlanJson = JSON.stringify({
       summary: "Plan summary",

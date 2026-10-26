@@ -53,66 +53,70 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
-    if (isOpen) {
-      previouslyFocusedElement.current = document.activeElement as HTMLElement;
-      document.body.style.overflow = "hidden";
-      scrollToBottom();
-      if (!drawerRef.current?.contains(document.activeElement)) {
-        inputRef.current?.focus();
+    if (!isOpen) {
+      return undefined;
+    }
+
+    previouslyFocusedElement.current = document.activeElement as HTMLElement;
+    document.body.style.overflow = "hidden";
+    scrollToBottom();
+    if (!drawerRef.current?.contains(document.activeElement)) {
+      inputRef.current?.focus();
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
       }
 
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "Escape") {
+      if (event.key === "Tab" && drawerRef.current) {
+        const focusable = Array.from(
+          drawerRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((el) => el.getAttribute("aria-hidden") !== "true");
+
+        if (focusable.length === 0) {
           event.preventDefault();
-          onClose();
           return;
         }
 
-        if (event.key === "Tab" && drawerRef.current) {
-          const focusable = Array.from(
-            drawerRef.current.querySelectorAll<HTMLElement>(
-              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            )
-          ).filter((el) => el.offsetParent !== null);
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
 
-          if (focusable.length === 0) {
+        if (event.shiftKey) {
+          if (document.activeElement === first || !drawerRef.current.contains(document.activeElement)) {
             event.preventDefault();
-            return;
+            last?.focus();
           }
-
-          const first = focusable[0];
-          const last = focusable[focusable.length - 1];
-
-          if (event.shiftKey) {
-            if (document.activeElement === first || !drawerRef.current.contains(document.activeElement)) {
-              event.preventDefault();
-              last?.focus();
-            }
-          } else {
-            if (document.activeElement === last || !drawerRef.current.contains(document.activeElement)) {
-              event.preventDefault();
-              first?.focus();
-            }
+        } else {
+          if (document.activeElement === last || !drawerRef.current.contains(document.activeElement)) {
+            event.preventDefault();
+            first?.focus();
           }
         }
-      };
+      }
+    };
 
-      window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
-      return () => {
-        document.body.style.overflow = "unset";
-        window.removeEventListener("keydown", handleKeyDown);
-        if (previouslyFocusedElement.current && typeof previouslyFocusedElement.current.focus === "function") {
-          previouslyFocusedElement.current.focus();
-        }
-      };
-    }
+    return () => {
+      abortControllerRef.current?.abort();
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+      if (previouslyFocusedElement.current && typeof previouslyFocusedElement.current.focus === "function") {
+        previouslyFocusedElement.current.focus();
+      }
+    };
   }, [isOpen, onClose]);
 
   useEffect(() => {
@@ -152,10 +156,15 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
     setInput("");
     setIsLoading(true);
 
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const response = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           messages: nextMessages.map((m) => ({
             role: m.role,
@@ -192,6 +201,9 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
       setMessages((prev) => [...prev, assistantMsg]);
       setSrAnnouncement("AI finished responding. New message available in chat history.");
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
       const errorStr =
         err instanceof Error ? err.message : "An unexpected error occurred.";
       setErrorMessage(errorStr);

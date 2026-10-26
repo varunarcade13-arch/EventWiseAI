@@ -25,75 +25,73 @@ export const Modal: React.FC<ModalProps> = ({
   const descriptionId = description ? `modal-desc-${uniqueId}` : undefined;
 
   useEffect(() => {
-    if (isOpen) {
-      previouslyFocusedElement.current = document.activeElement as HTMLElement;
-      document.body.style.overflow = "hidden";
+    if (!isOpen) {
+      return undefined;
+    }
 
-      // Set initial focus inside modal if not already focused inside
-      if (!modalRef.current?.contains(document.activeElement)) {
-        const firstInput = modalRef.current?.querySelector<HTMLElement>(
-          'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])'
+    previouslyFocusedElement.current = document.activeElement as HTMLElement;
+    document.body.style.overflow = "hidden";
+
+    // Set initial focus inside modal if not already focused inside
+    if (!modalRef.current?.contains(document.activeElement)) {
+      const firstInput = modalRef.current?.querySelector<HTMLElement>(
+        'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])'
+      );
+      if (firstInput) {
+        firstInput.focus();
+      } else {
+        const firstFocusable = modalRef.current?.querySelector<HTMLElement>(
+          'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
         );
-        if (firstInput) {
-          firstInput.focus();
-        } else {
-          const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
-            'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
-          );
-          if (focusable && focusable.length > 0) {
-            focusable[0]?.focus();
-          } else {
-            modalRef.current?.focus();
-          }
-        }
+        firstFocusable?.focus();
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
       }
 
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "Escape") {
+      if (event.key === "Tab" && modalRef.current) {
+        const focusable = Array.from(
+          modalRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((el) => el.getAttribute("aria-hidden") !== "true");
+
+        if (focusable.length === 0) {
           event.preventDefault();
-          onClose();
           return;
         }
 
-        if (event.key === "Tab" && modalRef.current) {
-          const focusable = Array.from(
-            modalRef.current.querySelectorAll<HTMLElement>(
-              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            )
-          ).filter((el) => el.offsetParent !== null);
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
 
-          if (focusable.length === 0) {
+        if (event.shiftKey) {
+          if (document.activeElement === first || !modalRef.current.contains(document.activeElement)) {
             event.preventDefault();
-            return;
+            last?.focus();
           }
-
-          const first = focusable[0];
-          const last = focusable[focusable.length - 1];
-
-          if (event.shiftKey) {
-            if (document.activeElement === first || !modalRef.current.contains(document.activeElement)) {
-              event.preventDefault();
-              last?.focus();
-            }
-          } else {
-            if (document.activeElement === last || !modalRef.current.contains(document.activeElement)) {
-              event.preventDefault();
-              first?.focus();
-            }
+        } else {
+          if (document.activeElement === last || !modalRef.current.contains(document.activeElement)) {
+            event.preventDefault();
+            first?.focus();
           }
         }
-      };
+      }
+    };
 
-      window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
-      return () => {
-        document.body.style.overflow = "unset";
-        window.removeEventListener("keydown", handleKeyDown);
-        if (previouslyFocusedElement.current && typeof previouslyFocusedElement.current.focus === "function") {
-          previouslyFocusedElement.current.focus();
-        }
-      };
-    }
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+      if (previouslyFocusedElement.current && typeof previouslyFocusedElement.current.focus === "function") {
+        previouslyFocusedElement.current.focus();
+      }
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;

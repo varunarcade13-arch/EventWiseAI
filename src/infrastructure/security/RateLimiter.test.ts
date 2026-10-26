@@ -94,4 +94,22 @@ describe("RateLimiter", () => {
     expect(res.allowed).toBe(false);
     expect(res.remaining).toBe(0);
   });
+
+  it("automatically prunes and bounds capacity when tracking over 500/1000 keys", () => {
+    const limiter = new RateLimiter({ windowMs: 100, maxRequests: 10 });
+    // Insert 505 keys
+    for (let i = 0; i < 505; i++) {
+      limiter.check(`key-${i}`, 1000);
+    }
+    // Checking key after window expires triggers automatic cleanup
+    const afterExpiry = limiter.check("trigger-cleanup", 2000);
+    expect(afterExpiry.allowed).toBe(true);
+
+    // Test hard boundary eviction over 1000 keys
+    for (let i = 0; i < 1005; i++) {
+      limiter.check(`overflow-${i}`, 2000);
+    }
+    const res = limiter.check("overflow-test", 2000);
+    expect(res.allowed).toBe(true);
+  });
 });

@@ -43,4 +43,12 @@ describe("Input component", () => {
     const plain = screen.getByPlaceholderText("Completely plain");
     expect(plain).not.toHaveAttribute("id");
   });
+
+  it("renders required asterisk and handles unlabelled input with error and helper text", () => {
+    render(<Input label="Required Field" required />);
+    expect(screen.getByText("*")).toBeInTheDocument();
+
+    render(<Input error="Standalone error" helperText="Standalone helper" placeholder="No label input" />);
+    expect(screen.getByText("Standalone error")).toBeInTheDocument();
+  });
 });
