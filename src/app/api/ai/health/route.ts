@@ -41,7 +41,12 @@ async function handleDiagnostic(): Promise<NextResponse> {
     hasWhitespace,
   };
 
-  const modelsToTest = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
+  const modelsToTest = [
+    "gemini-3.8-flash",
+    "gemini-2.5-flash",
+    "gemini-1.5-flash-latest",
+    "gemini-flash",
+  ];
   const results: Record<string, { success: boolean; response?: string; error?: Record<string, unknown> }> = {};
 
   const genAI = new GoogleGenerativeAI(cleanedKey);
@@ -105,6 +110,29 @@ async function handleDiagnostic(): Promise<NextResponse> {
     }
   }
 
+  // Also query listModels to get available generateContent models
+  let availableModels: string[] = [];
+  try {
+    const listRes = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models",
+      {
+        headers: { "x-goog-api-key": cleanedKey },
+      }
+    );
+    if (listRes.ok) {
+      const data = await listRes.json();
+      if (Array.isArray(data.models)) {
+        availableModels = data.models
+          .filter((m: { supportedGenerationMethods?: string[] }) =>
+            m.supportedGenerationMethods?.includes("generateContent")
+          )
+          .map((m: { name?: string }) => m.name || "");
+      }
+    }
+  } catch {
+    // Non-fatal listModels query
+  }
+
   const anySuccess = Object.values(results).some((r) => r.success);
 
   return NextResponse.json(
@@ -112,6 +140,7 @@ async function handleDiagnostic(): Promise<NextResponse> {
       status: anySuccess ? "ok" : "error",
       keyMeta,
       models: results,
+      availableModels,
       timestamp: new Date().toISOString(),
     },
     { status: anySuccess ? 200 : 502 }
