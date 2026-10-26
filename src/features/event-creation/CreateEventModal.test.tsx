@@ -1,0 +1,119 @@
+import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { CreateEventModal } from "./CreateEventModal";
+import { ToastProvider } from "@/components/ui/Toast";
+import React from "react";
+
+describe("CreateEventModal component", () => {
+  it("renders form, fills inputs, and submits successfully", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn().mockResolvedValue(undefined);
+    const handleClose = vi.fn();
+
+    render(
+      <ToastProvider>
+        <CreateEventModal
+          isOpen={true}
+          onClose={handleClose}
+          onSubmit={handleSubmit}
+        />
+      </ToastProvider>
+    );
+
+    expect(screen.getByText("Create New Event")).toBeInTheDocument();
+
+    const nameInput = screen.getByLabelText(/event name/i);
+    await user.type(nameInput, "Aarav Birthday Bash");
+
+    const dateInput = screen.getByLabelText(/event date/i);
+    await user.type(dateInput, "2026-11-20");
+
+    const locInput = screen.getByLabelText(/location/i);
+    await user.type(locInput, "FunZone Arena, Mumbai");
+
+    const typeSelect = screen.getByLabelText(/event type/i);
+    await user.selectOptions(typeSelect, "birthday");
+
+    const guestsInput = screen.getByLabelText(/expected guests/i);
+    await user.clear(guestsInput);
+    await user.type(guestsInput, "80");
+
+    const currencySelect = screen.getByLabelText(/currency/i);
+    await user.selectOptions(currencySelect, "USD");
+
+    const budgetInput = screen.getByLabelText(/total budget/i);
+    await user.clear(budgetInput);
+    await user.type(budgetInput, "50000");
+
+    // Toggle AI plan
+    const aiCheckbox = screen.getByRole("checkbox");
+    await user.click(aiCheckbox);
+
+    // Submit
+    await user.click(screen.getByRole("button", { name: /create event/i }));
+    expect(handleSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Aarav Birthday Bash",
+        type: "birthday",
+        location: "FunZone Arena, Mumbai",
+        date: "2026-11-20",
+        expectedGuests: 80,
+        currency: "USD",
+        totalBudget: 50000,
+        autoGenerateAI: false,
+      })
+    );
+  });
+
+  it("shows validation error on empty submit", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+
+    render(
+      <ToastProvider>
+        <CreateEventModal
+          isOpen={true}
+          onClose={() => {}}
+          onSubmit={handleSubmit}
+        />
+      </ToastProvider>
+    );
+
+    // Click submit with empty name and date
+    await user.click(screen.getByRole("button", { name: /create event/i }));
+    expect(handleSubmit).not.toHaveBeenCalled();
+    expect(screen.getByText("Event name is required.")).toBeInTheDocument();
+
+    // Typing into field clears error
+    await user.type(screen.getByLabelText(/event name/i), "Valid Name");
+    expect(screen.queryByText("Event name is required.")).not.toBeInTheDocument();
+  });
+
+  it("handles onSubmit rejection with Error and non-Error", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn().mockRejectedValueOnce(new Error("Server error"));
+
+    render(
+      <ToastProvider>
+        <CreateEventModal
+          isOpen={true}
+          onClose={() => {}}
+          onSubmit={handleSubmit}
+        />
+      </ToastProvider>
+    );
+
+    await user.type(screen.getByLabelText(/event name/i), "Annual Gala");
+    await user.type(screen.getByLabelText(/event date/i), "2026-12-01");
+    await user.type(screen.getByLabelText(/location/i), "City Center");
+
+    await user.click(screen.getByRole("button", { name: /create event/i }));
+    expect(screen.getByText("Server error")).toBeInTheDocument();
+
+    // Non-error rejection
+    handleSubmit.mockRejectedValueOnce("Unknown");
+    await user.click(screen.getByRole("button", { name: /create event/i }));
+    expect(screen.getByText("Failed to create event")).toBeInTheDocument();
+  });
+});
