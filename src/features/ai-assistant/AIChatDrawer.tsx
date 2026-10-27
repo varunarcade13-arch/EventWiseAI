@@ -443,6 +443,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
             placeholder="Ask anything about your event plan..."
             aria-label="Ask anything about your event plan"
             disabled={isLoading}
+            maxLength={1000}
             className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           />
           <Button

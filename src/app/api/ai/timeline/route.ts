@@ -8,8 +8,8 @@ import { z } from "zod";
 const RequestSchema = z.object({
   name: z.string().min(1).max(200),
   type: z.enum(["wedding", "birthday", "community", "other"]),
-  date: z.string().min(1),
-  expectedGuests: z.number().int().positive(),
+  date: z.string().min(1).max(50),
+  expectedGuests: z.number().int().positive().max(1000000),
 });
 
 export const runtime = "nodejs";

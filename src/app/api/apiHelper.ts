@@ -76,13 +76,41 @@ function sanitizeErrorMessage(msg: string): string {
 }
 
 export function checkRateLimit(request: Request): NextResponse | null {
-  // Check payload size if provided to prevent resource exhaustion attacks
-  const contentLength = request.headers.get("content-length");
-  if (contentLength && parseInt(contentLength, 10) > 100_000) {
+  // Reject unsupported HTTP methods
+  if (request.method !== "GET" && request.method !== "POST") {
     return NextResponse.json(
-      { error: "Payload too large. Maximum allowed size is 100KB." },
-      { status: 413 }
+      { error: "Method Not Allowed. Supported methods: GET, POST." },
+      { status: 405 }
     );
+  }
+
+  // Check payload size if provided to prevent resource exhaustion attacks
+  const rawContentLength = request.headers.get("content-length");
+  if (rawContentLength) {
+    const contentLength = parseInt(rawContentLength, 10);
+    if (isNaN(contentLength) || contentLength < 0) {
+      return NextResponse.json(
+        { error: "Invalid Content-Length header." },
+        { status: 400 }
+      );
+    }
+    if (contentLength > 100_000) {
+      return NextResponse.json(
+        { error: "Payload too large. Maximum allowed size is 100KB." },
+        { status: 413 }
+      );
+    }
+  }
+
+  // Enforce application/json for POST requests with body content
+  if (request.method === "POST" && rawContentLength && parseInt(rawContentLength, 10) > 0) {
+    const contentType = request.headers.get("content-type");
+    if (!contentType || !contentType.toLowerCase().includes("application/json")) {
+      return NextResponse.json(
+        { error: "Unsupported Media Type. Content-Type must be application/json." },
+        { status: 415 }
+      );
+    }
   }
 
   // Cross-origin request validation (CSRF & unauthorized cross-origin invocation mitigation)
@@ -190,13 +218,18 @@ export function handleApiError(error: unknown): NextResponse {
   if (
     error instanceof ValidationError ||
     statusNumber === 400 ||
+    error instanceof SyntaxError ||
     safeMessage.includes("validation failed") ||
     safeMessage.includes("Invalid request") ||
-    safeMessage.includes("exceeds maximum")
+    safeMessage.includes("exceeds maximum") ||
+    safeMessage.includes("Unexpected token")
   ) {
+    const isJsonSyntax =
+      error instanceof SyntaxError ||
+      safeMessage.includes("Unexpected token");
     return NextResponse.json(
       {
-        error: safeMessage,
+        error: isJsonSyntax ? "Invalid or malformed JSON payload in request." : safeMessage,
         code: "VALIDATION_ERROR",
       },
       { status: 400 }

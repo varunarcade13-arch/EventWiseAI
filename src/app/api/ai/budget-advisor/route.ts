@@ -16,7 +16,7 @@ const CategoryInputSchema = z.object({
 const RequestSchema = z.object({
   name: z.string().min(1).max(200),
   type: z.enum(["wedding", "birthday", "community", "other"]),
-  totalBudget: z.number().nonnegative(),
+  totalBudget: z.number().nonnegative().max(10000000000),
   currency: z.enum(["INR", "USD", "EUR", "GBP"]),
   expectedGuests: z.number().int().positive().max(1000000),
   budgetCategories: z.array(CategoryInputSchema).max(100),

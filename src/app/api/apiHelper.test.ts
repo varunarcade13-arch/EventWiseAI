@@ -279,5 +279,71 @@ describe("apiHelper", () => {
       const json = await res.json();
       expect(json.code).toBe("SERVICE_UNAVAILABLE");
     });
+
+    it("handles SyntaxError as malformed JSON with 400 status", async () => {
+      const err = new SyntaxError("Unexpected token < in JSON at position 0");
+      const res = handleApiError(err);
+      expect(res.status).toBe(400);
+      const json = await res.json();
+      expect(json.code).toBe("VALIDATION_ERROR");
+      expect(json.error).toBe("Invalid or malformed JSON payload in request.");
+    });
+  });
+
+  describe("API Security Gates in checkRateLimit", () => {
+    it("rejects unsupported HTTP methods with 405 Method Not Allowed", () => {
+      const req = new Request("http://localhost/api/test", {
+        method: "DELETE",
+      });
+      const res = checkRateLimit(req);
+      expect(res).not.toBeNull();
+      expect(res?.status).toBe(405);
+    });
+
+    it("rejects invalid content-length header with 400 Bad Request", () => {
+      const req = new Request("http://localhost/api/test", {
+        method: "POST",
+        headers: { "content-length": "-10" },
+      });
+      const res = checkRateLimit(req);
+      expect(res).not.toBeNull();
+      expect(res?.status).toBe(400);
+    });
+
+    it("rejects non-numeric content-length header with 400 Bad Request", () => {
+      const req = new Request("http://localhost/api/test", {
+        method: "POST",
+        headers: { "content-length": "invalid-num" },
+      });
+      const res = checkRateLimit(req);
+      expect(res).not.toBeNull();
+      expect(res?.status).toBe(400);
+    });
+
+    it("rejects POST requests with non-JSON content-type with 415 Unsupported Media Type", () => {
+      const req = new Request("http://localhost/api/test", {
+        method: "POST",
+        headers: {
+          "content-length": "50",
+          "content-type": "text/html",
+        },
+      });
+      const res = checkRateLimit(req);
+      expect(res).not.toBeNull();
+      expect(res?.status).toBe(415);
+    });
+
+    it("accepts valid POST request with application/json", () => {
+      const req = new Request("http://localhost/api/test", {
+        method: "POST",
+        headers: {
+          "content-length": "50",
+          "content-type": "application/json",
+          "x-real-ip": "10.10.10.10",
+        },
+      });
+      const res = checkRateLimit(req);
+      expect(res).toBeNull();
+    });
   });
 });

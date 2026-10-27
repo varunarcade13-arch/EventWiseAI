@@ -65,55 +65,59 @@ export const RiskSchema = z.object({
 });
 
 export const EventPlanSchema = z.object({
-  summary: z.string().min(1),
-  estimatedBudget: z.array(BudgetCategorySchema),
-  timeline: z.array(TimelineTaskSchema),
-  vendors: z.array(VendorItemSchema),
-  recommendations: z.array(RecommendationSchema),
-  risks: z.array(RiskSchema),
+  summary: z.string().min(1).max(5000),
+  estimatedBudget: z.array(BudgetCategorySchema).max(100),
+  timeline: z.array(TimelineTaskSchema).max(200),
+  vendors: z.array(VendorItemSchema).max(100),
+  recommendations: z.array(RecommendationSchema).max(50),
+  risks: z.array(RiskSchema).max(50),
 });
 
 export type EventPlan = z.infer<typeof EventPlanSchema>;
 
 export const BudgetAnalysisSchema = z.object({
-  summary: z.string().min(1),
+  summary: z.string().min(1).max(5000),
   healthScore: z.number().min(0).max(100),
   overspendingRisk: z.boolean(),
-  underallocatedCategories: z.array(z.string()),
-  potentialSavings: z.array(
-    z.object({
-      category: z.string(),
-      tip: z.string(),
-      estimatedSavings: z.number().nonnegative(),
-    })
-  ),
-  redistributionSuggestions: z.array(
-    z.object({
-      category: z.string(),
-      currentAllocation: z.number(),
-      suggestedAllocation: z.number(),
-      reason: z.string(),
-    })
-  ),
+  underallocatedCategories: z.array(z.string().max(200)).max(50),
+  potentialSavings: z
+    .array(
+      z.object({
+        category: z.string().max(200),
+        tip: z.string().max(1000),
+        estimatedSavings: z.number().nonnegative(),
+      })
+    )
+    .max(50),
+  redistributionSuggestions: z
+    .array(
+      z.object({
+        category: z.string().max(200),
+        currentAllocation: z.number(),
+        suggestedAllocation: z.number(),
+        reason: z.string().max(1000),
+      })
+    )
+    .max(50),
 });
 
 export type BudgetAnalysis = z.infer<typeof BudgetAnalysisSchema>;
 
 export const RiskAnalysisSchema = z.object({
-  summary: z.string().min(1),
-  risks: z.array(RiskSchema),
+  summary: z.string().min(1).max(5000),
+  risks: z.array(RiskSchema).max(50),
 });
 
 export type RiskAnalysis = z.infer<typeof RiskAnalysisSchema>;
 
 export const IdeasPlanSchema = z.object({
-  summary: z.string().min(1),
-  themes: z.array(z.string()),
-  activities: z.array(z.string()),
-  decorationIdeas: z.array(z.string()),
-  foodIdeas: z.array(z.string()),
-  entertainment: z.array(z.string()),
-  guestExperiences: z.array(z.string()),
+  summary: z.string().min(1).max(5000),
+  themes: z.array(z.string().max(300)).max(20),
+  activities: z.array(z.string().max(500)).max(50),
+  decorationIdeas: z.array(z.string().max(500)).max(50),
+  foodIdeas: z.array(z.string().max(500)).max(50),
+  entertainment: z.array(z.string().max(500)).max(50),
+  guestExperiences: z.array(z.string().max(500)).max(50),
 });
 
 export type IdeasPlan = z.infer<typeof IdeasPlanSchema>;

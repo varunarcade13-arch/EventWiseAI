@@ -141,6 +141,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
           label="Event Name"
           placeholder="e.g. Maya & Liam's Sunset Wedding"
           value={formData.name}
+          maxLength={120}
           onChange={(e) => handleChange("name", e.target.value)}
           error={errors.name}
           required
@@ -179,6 +180,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
           label="Location / City / Venue"
           placeholder="e.g. The Taj Gateway, Bangalore"
           value={formData.location}
+          maxLength={200}
           onChange={(e) => handleChange("location", e.target.value)}
           error={errors.location}
           required
@@ -191,6 +193,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
             label="Expected Guests"
             type="number"
             min="1"
+            max="1000000"
             value={formData.expectedGuests}
             onChange={(e) => handleChange("expectedGuests", e.target.value)}
             error={errors.expectedGuests}
@@ -217,6 +220,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
             label="Total Budget"
             type="number"
             min="0"
+            max="10000000000"
             value={formData.totalBudget}
             onChange={(e) => handleChange("totalBudget", e.target.value)}
             error={errors.totalBudget}

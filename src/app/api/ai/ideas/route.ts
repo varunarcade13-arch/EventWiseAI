@@ -9,7 +9,7 @@ const RequestSchema = z.object({
   name: z.string().min(1).max(200),
   type: z.enum(["wedding", "birthday", "community", "other"]),
   location: z.string().min(1).max(200),
-  expectedGuests: z.number().int().positive(),
+  expectedGuests: z.number().int().positive().max(1000000),
 });
 
 export const runtime = "nodejs";

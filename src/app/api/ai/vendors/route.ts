@@ -8,8 +8,8 @@ import { z } from "zod";
 const RequestSchema = z.object({
   name: z.string().min(1).max(200),
   type: z.enum(["wedding", "birthday", "community", "other"]),
-  totalBudget: z.number().nonnegative(),
-  expectedGuests: z.number().int().positive(),
+  totalBudget: z.number().nonnegative().max(10000000000),
+  expectedGuests: z.number().int().positive().max(1000000),
   currency: z.enum(["INR", "USD", "EUR", "GBP"]),
 });
 
