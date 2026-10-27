@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GeminiAIPlannerService } from "./GeminiAIPlannerService";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GEMINI_CONFIG } from "./geminiConfig";
 
 vi.mock("@google/generative-ai", () => {
   return {
@@ -248,11 +249,13 @@ describe("GeminiAIPlannerService", () => {
     vi.useFakeTimers();
 
     const mockGenerateContent = vi.fn().mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({ response: { text: () => "{}" } });
-          }, 30000);
+      (_prompt: string, options?: { signal?: AbortSignal }) =>
+        new Promise((_, reject) => {
+          if (options?.signal) {
+            options.signal.addEventListener("abort", () => {
+              reject(new Error("This operation was aborted"));
+            });
+          }
         })
     );
 
@@ -269,11 +272,122 @@ describe("GeminiAIPlannerService", () => {
       location: "L",
       expectedGuests: 10,
     });
+    const expectation = expect(callPromise).rejects.toThrow("Gemini request timed out");
 
     // Advance time past 25s timeout
-    vi.advanceTimersByTime(26000);
+    await vi.advanceTimersByTimeAsync(26000);
 
-    await expect(callPromise).rejects.toThrow("Gemini request timed out");
+    await expectation;
     vi.useRealTimers();
   });
+
+  it("retries with fallbackModel when primary model returns 503", async () => {
+    const mockIdeasJson = JSON.stringify({
+      summary: "Fallback ideas",
+      themes: ["Rustic Chic"],
+      activities: ["Games"],
+      decorationIdeas: ["Flowers"],
+      foodIdeas: ["Buffet"],
+      entertainment: ["DJ"],
+      guestExperiences: ["Favors"],
+    });
+
+    const mockPrimaryGenerate = vi.fn().mockRejectedValue({
+      status: 503,
+      message: "The model is overloaded. Please try again later.",
+    });
+
+    const mockFallbackGenerate = vi.fn().mockResolvedValue({
+      response: { text: () => mockIdeasJson },
+    });
+
+    vi.mocked(GoogleGenerativeAI).mockImplementation(
+      () =>
+        ({
+          getGenerativeModel: vi.fn().mockImplementation((config: { model: string }) => {
+            if (config.model === GEMINI_CONFIG.primaryModel) {
+              return { generateContent: mockPrimaryGenerate };
+            }
+            return { generateContent: mockFallbackGenerate };
+          }),
+        }) as unknown as GoogleGenerativeAI
+    );
+
+    const service = new GeminiAIPlannerService("key_test");
+    const ideas = await service.generateIdeas({
+      name: "E",
+      type: "wedding",
+      location: "L",
+      expectedGuests: 10,
+    });
+    expect(ideas.summary).toBe("Fallback ideas");
+  });
+
+  it("retries with fallbackModel when primary model returns high demand without status", async () => {
+    const mockIdeasJson = JSON.stringify({
+      summary: "High demand resolved",
+      themes: ["Rustic Chic"],
+      activities: ["Games"],
+      decorationIdeas: ["Flowers"],
+      foodIdeas: ["Buffet"],
+      entertainment: ["DJ"],
+      guestExperiences: ["Favors"],
+    });
+
+    const mockPrimaryGenerate = vi.fn().mockRejectedValue({
+      message: "This model is currently experiencing high demand. Please retry.",
+    });
+
+    const mockFallbackGenerate = vi.fn().mockResolvedValue({
+      response: { text: () => mockIdeasJson },
+    });
+
+    vi.mocked(GoogleGenerativeAI).mockImplementation(
+      () =>
+        ({
+          getGenerativeModel: vi.fn().mockImplementation((config: { model: string }) => {
+            if (config.model === GEMINI_CONFIG.primaryModel) {
+              return { generateContent: mockPrimaryGenerate };
+            }
+            return { generateContent: mockFallbackGenerate };
+          }),
+        }) as unknown as GoogleGenerativeAI
+    );
+
+    const service = new GeminiAIPlannerService("key_test");
+    const ideas = await service.generateIdeas({
+      name: "E",
+      type: "wedding",
+      location: "L",
+      expectedGuests: 10,
+    });
+    expect(ideas.summary).toBe("High demand resolved");
+  });
+
+  it("does not retry fallback if service is already using fallbackModel", async () => {
+    const mockGenerate = vi.fn().mockRejectedValue({
+      status: 503,
+      message: "Overloaded",
+    });
+
+    vi.mocked(GoogleGenerativeAI).mockImplementation(
+      () =>
+        ({
+          getGenerativeModel: vi.fn().mockReturnValue({
+            generateContent: mockGenerate,
+          }),
+        }) as unknown as GoogleGenerativeAI
+    );
+
+    const service = new GeminiAIPlannerService("key_test", GEMINI_CONFIG.fallbackModel);
+    await expect(
+      service.generateIdeas({
+        name: "E",
+        type: "wedding",
+        location: "L",
+        expectedGuests: 10,
+      })
+    ).rejects.toEqual(expect.objectContaining({ status: 503 }));
+  });
 });
+

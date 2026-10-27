@@ -1,3 +1,4 @@
+import { GEMINI_CONFIG } from "@/infrastructure/ai/geminiConfig";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
@@ -28,122 +29,74 @@ async function handleDiagnostic(): Promise<NextResponse> {
     );
   }
 
-  // Check key formatting safely (never reveal key)
-  const cleanedKey = (rawKey || "").replace(/^["']|["']$/g, "").trim();
-  const keyLength = cleanedKey.length;
-  const startsWithAIza = cleanedKey.startsWith("AIza");
-  const hasWhitespace = /\s/.test(cleanedKey);
-
+  const cleanedKey = rawKey!.replace(/^["']|["']$/g, "").trim();
   const keyMeta = {
     configured: true,
-    length: keyLength,
-    startsWithAIza,
-    hasWhitespace,
+    length: cleanedKey.length,
+    startsWithAIza: cleanedKey.startsWith("AIza"),
+    hasWhitespace: /\s/.test(cleanedKey),
   };
 
-  const modelsToTest = [
-    "gemini-flash-latest",
-    "gemini-3.5-flash",
-    "gemini-3.7-flash",
-    "gemini-3.8-flash",
-    "gemini-flash-lite-latest",
-  ];
-  const results: Record<string, { success: boolean; response?: string; error?: Record<string, unknown> }> = {};
-
   const genAI = new GoogleGenerativeAI(cleanedKey);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
 
-  for (const modelName of modelsToTest) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-
-    try {
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: {
-          maxOutputTokens: 20,
-          temperature: 0.1,
-        },
-      });
-
-      const response = await model.generateContent("Respond with the word OK.", {
-        signal: controller.signal,
-      });
-
-      const text = response.response.text();
-      results[modelName] = {
-        success: true,
-        response: text.trim(),
-      };
-    } catch (err: unknown) {
-      const errorObj = err as {
-        name?: string;
-        message?: string;
-        status?: number;
-        statusText?: string;
-        errorDetails?: unknown;
-      };
-
-      // Sanitize error message to ensure no accidental key exposure
-      const safeMessage = (errorObj.message || "Unknown error").replace(
-        cleanedKey,
-        "[REDACTED_API_KEY]"
-      );
-
-      console.error(`[Gemini Health Check] Model ${modelName} failed:`, {
-        name: errorObj.name,
-        status: errorObj.status,
-        statusText: errorObj.statusText,
-        message: safeMessage,
-      });
-
-      results[modelName] = {
-        success: false,
-        error: {
-          name: errorObj.name || "Error",
-          status: errorObj.status || 500,
-          statusText: errorObj.statusText || "",
-          message: safeMessage,
-          details: errorObj.errorDetails,
-        },
-      };
-    } finally {
-      clearTimeout(timeout);
-    }
-  }
-
-  // Also query listModels to get available generateContent models
-  let availableModels: string[] = [];
   try {
-    const listRes = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models",
+    const model = genAI.getGenerativeModel({
+      model: GEMINI_CONFIG.primaryModel,
+      generationConfig: {
+        maxOutputTokens: 20,
+        temperature: 0.1,
+      },
+    });
+
+    const response = await model.generateContent("Respond with the word OK.", {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    const text = response.response.text();
+    return NextResponse.json(
       {
-        headers: { "x-goog-api-key": cleanedKey },
-      }
+        status: "ok",
+        model: GEMINI_CONFIG.primaryModel,
+        response: text.trim(),
+        keyMeta,
+        timestamp: new Date().toISOString(),
+      },
+      { status: 200 }
     );
-    if (listRes.ok) {
-      const data = await listRes.json();
-      if (Array.isArray(data.models)) {
-        availableModels = data.models
-          .filter((m: { supportedGenerationMethods?: string[] }) =>
-            m.supportedGenerationMethods?.includes("generateContent")
-          )
-          .map((m: { name?: string }) => m.name || "");
-      }
-    }
-  } catch {
-    // Non-fatal listModels query
+  } catch (err: unknown) {
+    clearTimeout(timeout);
+    const errRecord = err && typeof err === "object" ? (err as Record<string, unknown>) : {};
+    const errorName = typeof errRecord.name === "string" ? errRecord.name : "Error";
+    const errorStatus = typeof errRecord.status === "number" ? errRecord.status : 500;
+    const errorStatusText = typeof errRecord.statusText === "string" ? errRecord.statusText : "";
+    const rawMessage = typeof errRecord.message === "string" ? errRecord.message : "Unknown error";
+    const safeMessage = rawMessage.replace(cleanedKey, "[REDACTED_API_KEY]");
+
+    console.error(`[Gemini Health Check] Model ${GEMINI_CONFIG.primaryModel} failed:`, {
+      name: errorName,
+      status: errorStatus,
+      statusText: errorStatusText,
+      message: safeMessage,
+    });
+
+    return NextResponse.json(
+      {
+        status: "error",
+        model: GEMINI_CONFIG.primaryModel,
+        keyMeta,
+        error: {
+          name: errorName,
+          status: errorStatus,
+          statusText: errorStatusText,
+          message: safeMessage,
+          details: errRecord.errorDetails,
+        },
+        timestamp: new Date().toISOString(),
+      },
+      { status: 502 }
+    );
   }
-
-  const anySuccess = Object.values(results).some((r) => r.success);
-
-  return NextResponse.json(
-    {
-      status: anySuccess ? "ok" : "error",
-      keyMeta,
-      models: results,
-      availableModels,
-      timestamp: new Date().toISOString(),
-    },
-    { status: anySuccess ? 200 : 502 }
-  );
 }

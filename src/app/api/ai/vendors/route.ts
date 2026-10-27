@@ -13,6 +13,9 @@ const RequestSchema = z.object({
   currency: z.enum(["INR", "USD", "EUR", "GBP"]),
 });
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request) {
   const rateLimitResponse = checkRateLimit(request);
   if (rateLimitResponse) return rateLimitResponse;

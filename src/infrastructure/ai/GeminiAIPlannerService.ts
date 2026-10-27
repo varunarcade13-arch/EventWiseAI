@@ -1,5 +1,11 @@
 import { AIPlannerService } from "@/application/interfaces/AIPlannerService";
+import {
+  ConfigurationError,
+  TimeoutError,
+  GeminiApiError,
+} from "@/app/api/apiHelper";
 import { AIResponseValidator } from "@/infrastructure/ai/AIResponseValidator";
+import { GEMINI_CONFIG } from "@/infrastructure/ai/geminiConfig";
 import { PromptBuilder } from "@/infrastructure/ai/PromptBuilder";
 import {
   BudgetAnalysis,
@@ -18,9 +24,11 @@ export class GeminiAIPlannerService implements AIPlannerService {
 
   constructor(
     apiKey: string | undefined = process.env.GEMINI_API_KEY,
-    modelName: string = "gemini-1.5-flash"
+    modelName: string = GEMINI_CONFIG.primaryModel
   ) {
-    this.apiKey = (apiKey || "").trim();
+    this.apiKey = (apiKey || process.env.GEMINI_API_KEY || "")
+      .replace(/^["']|["']$/g, "")
+      .trim();
     this.modelName = modelName;
     if (this.apiKey) {
       this.genAI = new GoogleGenerativeAI(this.apiKey);
@@ -29,56 +37,88 @@ export class GeminiAIPlannerService implements AIPlannerService {
 
   private ensureConfigured(): GoogleGenerativeAI {
     if (!this.apiKey || !this.genAI) {
-      throw new Error(
-        "Gemini API key is not configured. Please set the GEMINI_API_KEY environment variable in your Vercel project settings or .env.local file."
-      );
+      throw new ConfigurationError();
     }
     return this.genAI;
   }
 
+  /**
+   * Performs an individual model generateContent call with AbortController signal
+   */
+  private async executeModelCall(
+    modelName: string,
+    prompt: string,
+    timeoutMs: number
+  ): Promise<string> {
+    const client = this.ensureConfigured();
+    const model = client.getGenerativeModel({
+      model: modelName,
+      generationConfig: GEMINI_CONFIG.generationConfig,
+    });
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      controller.abort();
+    }, timeoutMs);
+
+    try {
+      const result = await model.generateContent(prompt, {
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+
+      const response = result.response;
+      const text = response.text().trim();
+      if (!text) {
+        throw new GeminiApiError("Received empty response from Gemini API.", 502);
+      }
+      return text;
+    } catch (err: unknown) {
+      clearTimeout(timer);
+      if (controller.signal.aborted) {
+        throw new TimeoutError(
+          `Gemini request timed out after ${Math.round(timeoutMs / 1000)} seconds. Please try again.`
+        );
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Generates text with bounded timeout, AbortController cancellation, and
+   * resilient fallback to GEMINI_CONFIG.fallbackModel on transient 503/404 errors.
+   */
   private async generateWithTimeout(
     prompt: string,
-    timeoutMs: number = 25000
+    timeoutMs: number = GEMINI_CONFIG.timeoutMs
   ): Promise<string> {
     if (!prompt || prompt.length > 25000) {
       throw new Error("Prompt exceeds maximum permissible length of 25,000 characters.");
     }
 
-    const client = this.ensureConfigured();
-    const model = client.getGenerativeModel({
-      model: this.modelName,
-      generationConfig: {
-        maxOutputTokens: 3072,
-        temperature: 0.7,
-      },
-    });
-
-    let timer: NodeJS.Timeout | undefined;
-    const callPromise = model.generateContent(prompt).then((result) => {
-      const response = result.response;
-      const text = response.text();
-      if (!text || text.trim() === "") {
-        throw new Error("Received empty response from Gemini API.");
-      }
-      return text;
-    });
-
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timer = setTimeout(() => {
-        reject(
-          new Error(
-            "Gemini request timed out after 25 seconds. Please try again."
-          )
-        );
-      }, timeoutMs);
-    });
-
     try {
-      return await Promise.race([callPromise, timeoutPromise]);
-    } finally {
-      if (timer) {
-        clearTimeout(timer);
+      return await this.executeModelCall(this.modelName, prompt, timeoutMs);
+    } catch (err: unknown) {
+      const errObj = err as { status?: number; message?: string };
+      const isTransient =
+        errObj?.status === 503 ||
+        errObj?.status === 404 ||
+        Boolean(errObj?.message?.includes("high demand")) ||
+        Boolean(errObj?.message?.includes("is not found"));
+
+      // Only attempt fallback if primary model was used and a distinct fallback exists
+      if (isTransient && this.modelName !== GEMINI_CONFIG.fallbackModel) {
+        console.warn(
+          `[Gemini Fallback] Model ${this.modelName} encountered transient error (${errObj.status || "demand"}). Retrying once with ${GEMINI_CONFIG.fallbackModel}...`
+        );
+        return await this.executeModelCall(
+          GEMINI_CONFIG.fallbackModel,
+          prompt,
+          timeoutMs
+        );
       }
+
+      throw err;
     }
   }
 

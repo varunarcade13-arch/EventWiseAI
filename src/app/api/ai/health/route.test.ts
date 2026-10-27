@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, POST } from "./route";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -25,7 +25,7 @@ describe("/api/ai/health route", () => {
     expect(json.apiKeyConfigured).toBe(false);
   });
 
-  it("returns 200 and model results when Gemini succeeds", async () => {
+  it("returns 200 and model results when Gemini succeeds via POST", async () => {
     const mockGenerateContent = vi.fn().mockResolvedValue({
       response: {
         text: () => "OK",
@@ -47,16 +47,15 @@ describe("/api/ai/health route", () => {
     expect(json.status).toBe("ok");
     expect(json.keyMeta.configured).toBe(true);
     expect(json.keyMeta.startsWithAIza).toBe(true);
-    expect(json.models["gemini-1.5-flash"].success).toBe(true);
-    expect(json.models["gemini-1.5-flash"].response).toBe("OK");
+    expect(json.response).toBe("OK");
   });
 
-  it("returns 502 when all models fail", async () => {
+  it("returns 502 when model call fails via GET", async () => {
     const mockGenerateContent = vi.fn().mockRejectedValue({
       name: "GoogleGenerativeAIFetchError",
       status: 404,
       statusText: "Not Found",
-      message: "models/gemini-1.5-flash is not found for API version v1beta",
+      message: "Model not found",
     });
 
     vi.mocked(GoogleGenerativeAI).mockImplementation(
@@ -72,6 +71,48 @@ describe("/api/ai/health route", () => {
     expect(res.status).toBe(502);
     const json = await res.json();
     expect(json.status).toBe("error");
-    expect(json.models["gemini-1.5-flash"].success).toBe(false);
+    expect(json.error.status).toBe(404);
+  });
+
+  it("handles generic error without status or statusText gracefully", async () => {
+    const mockGenerateContent = vi.fn().mockRejectedValue(new Error("Generic socket hangup"));
+
+    vi.mocked(GoogleGenerativeAI).mockImplementation(
+      () =>
+        ({
+          getGenerativeModel: () => ({
+            generateContent: mockGenerateContent,
+          }),
+        }) as unknown as GoogleGenerativeAI
+    );
+
+    const res = await GET();
+    expect(res.status).toBe(502);
+    const json = await res.json();
+    expect(json.status).toBe("error");
+    expect(json.error.status).toBe(500);
+    expect(json.error.message).toBe("Generic socket hangup");
+  });
+
+  it("handles primitive non-object errors gracefully", async () => {
+    const mockGenerateContent = vi.fn().mockRejectedValue("raw string exception");
+
+    vi.mocked(GoogleGenerativeAI).mockImplementation(
+      () =>
+        ({
+          getGenerativeModel: () => ({
+            generateContent: mockGenerateContent,
+          }),
+        }) as unknown as GoogleGenerativeAI
+    );
+
+    const res = await GET();
+    expect(res.status).toBe(502);
+    const json = await res.json();
+    expect(json.status).toBe("error");
+    expect(json.error.status).toBe(500);
+    expect(json.error.message).toBe("Unknown error");
+    expect(json.error.name).toBe("Error");
   });
 });
+

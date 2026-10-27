@@ -63,7 +63,7 @@ describe("/api/ai/plan route", () => {
 
   it("handles Gemini failure with 500 error", async () => {
     vi.mocked(GeminiAIPlannerService.prototype.generateEventPlan).mockRejectedValue(
-      new Error("Gemini quota exceeded")
+      new Error("Unexpected internal failure")
     );
 
     const req = new Request("http://localhost/api/ai/plan", {

@@ -12,6 +12,9 @@ const RequestSchema = z.object({
   expectedGuests: z.number().int().positive(),
 });
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request) {
   const rateLimitResponse = checkRateLimit(request);
   if (rateLimitResponse) return rateLimitResponse;

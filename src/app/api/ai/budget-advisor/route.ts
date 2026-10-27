@@ -22,6 +22,9 @@ const RequestSchema = z.object({
   budgetCategories: z.array(CategoryInputSchema).max(100),
 });
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request) {
   const rateLimitResponse = checkRateLimit(request);
   if (rateLimitResponse) return rateLimitResponse;
