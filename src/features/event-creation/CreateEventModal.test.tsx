@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CreateEventModal } from "./CreateEventModal";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -162,4 +162,34 @@ describe("CreateEventModal component", () => {
     await user.click(screen.getByRole("button", { name: /create event/i }));
     expect(document.activeElement).toBe(budgetInput);
   });
+
+  it("prevents double submission while submitting", async () => {
+    const user = userEvent.setup();
+    let resolveSubmit: () => void;
+    const handleSubmit = vi.fn().mockImplementation(() => new Promise<void>((resolve) => { resolveSubmit = resolve; }));
+
+    render(
+      <ToastProvider>
+        <CreateEventModal
+          isOpen={true}
+          onClose={vi.fn()}
+          onSubmit={handleSubmit}
+        />
+      </ToastProvider>
+    );
+
+    await user.type(screen.getByLabelText(/event name/i), "Annual Gala");
+    await user.type(screen.getByLabelText(/event date/i), "2027-01-01");
+    await user.type(screen.getByLabelText(/location/i), "Hotel");
+
+    const submitBtn = screen.getByRole("button", { name: /create event/i });
+    await user.click(submitBtn);
+
+    const form = screen.getByRole("dialog").querySelector("form")!;
+    fireEvent.submit(form);
+
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+    resolveSubmit!();
+  });
 });
+

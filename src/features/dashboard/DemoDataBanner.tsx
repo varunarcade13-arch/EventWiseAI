@@ -6,7 +6,7 @@ export interface DemoDataBannerProps {
   onResetDemo: () => void;
 }
 
-export const DemoDataBanner: React.FC<DemoDataBannerProps> = ({ isDemo, onResetDemo }) => {
+export const DemoDataBanner: React.FC<DemoDataBannerProps> = React.memo(({ isDemo, onResetDemo }) => {
   if (!isDemo) return null;
 
   return (
@@ -34,4 +34,6 @@ export const DemoDataBanner: React.FC<DemoDataBannerProps> = ({ isDemo, onResetD
       </div>
     </div>
   );
-};
+});
+
+DemoDataBanner.displayName = "DemoDataBanner";

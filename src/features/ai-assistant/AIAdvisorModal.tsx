@@ -27,7 +27,7 @@ export interface AIAdvisorModalProps {
   onApplyRisks?: () => Promise<void>;
 }
 
-export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
+export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = React.memo(({
   type,
   isOpen,
   onClose,
@@ -162,48 +162,51 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
             )}
 
             {/* Activities & Experiences */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {ideasPlan.activities?.length > 0 && (
-                <Card className="p-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">
-                    Activities & Entertainment
-                  </h4>
-                  <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 list-disc pl-4">
-                    {ideasPlan.activities.map((act, i) => (
-                      <li key={i}>{act}</li>
-                    ))}
-                  </ul>
-                </Card>
-              )}
+            <div>
+              <h3 className="sr-only">Interactive Experiences & Decor</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {ideasPlan.activities?.length > 0 && (
+                  <Card className="p-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">
+                      Activities & Entertainment
+                    </h4>
+                    <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 list-disc pl-4">
+                      {ideasPlan.activities.map((act, i) => (
+                        <li key={i}>{act}</li>
+                      ))}
+                    </ul>
+                  </Card>
+                )}
 
-              {ideasPlan.foodIdeas?.length > 0 && (
-                <Card className="p-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">
-                    Culinary & Food Touches
-                  </h4>
-                  <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 list-disc pl-4">
-                    {ideasPlan.foodIdeas.map((f, i) => (
-                      <li key={i}>{f}</li>
-                    ))}
-                  </ul>
-                </Card>
-              )}
+                {ideasPlan.foodIdeas?.length > 0 && (
+                  <Card className="p-4">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">
+                      Culinary & Food Touches
+                    </h4>
+                    <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 list-disc pl-4">
+                      {ideasPlan.foodIdeas.map((f, i) => (
+                        <li key={i}>{f}</li>
+                      ))}
+                    </ul>
+                  </Card>
+                )}
 
-              {ideasPlan.decorationIdeas?.length > 0 && (
-                <Card className="p-4 sm:col-span-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">
-                    Decoration & Aesthetic Accents
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-300">
-                    {ideasPlan.decorationIdeas.map((d, i) => (
-                      <div key={i} className="flex items-start gap-1.5">
-                        <span className="text-brand-500 font-bold">•</span>
-                        <span>{d}</span>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              )}
+                {ideasPlan.decorationIdeas?.length > 0 && (
+                  <Card className="p-4 sm:col-span-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 mb-2">
+                      Decoration & Aesthetic Accents
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700 dark:text-slate-300">
+                      {ideasPlan.decorationIdeas.map((d, i) => (
+                        <div key={i} className="flex items-start gap-1.5">
+                          <span className="text-brand-500 font-bold">•</span>
+                          <span>{d}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -215,37 +218,43 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
               <p className="font-semibold">{riskAnalysis.summary}</p>
             </div>
 
-            <div className="space-y-3">
-              {riskAnalysis.risks.map((r, idx) => (
-                <div
-                  key={idx}
-                  className="p-4 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0" aria-hidden="true" />
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                        {r.risk}
-                      </h4>
+            <div>
+              <h3 className="text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+                <ShieldAlert className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
+                Identified Risk Contingencies
+              </h3>
+              <div className="space-y-3">
+                {riskAnalysis.risks.map((r, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0" aria-hidden="true" />
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          {r.risk}
+                        </h4>
+                      </div>
+                      <Badge
+                        variant={
+                          r.impact === "high"
+                            ? "danger"
+                            : r.impact === "medium"
+                            ? "warning"
+                            : "neutral"
+                        }
+                        size="sm"
+                      >
+                        {r.impact.toUpperCase()} IMPACT
+                      </Badge>
                     </div>
-                    <Badge
-                      variant={
-                        r.impact === "high"
-                          ? "danger"
-                          : r.impact === "medium"
-                          ? "warning"
-                          : "neutral"
-                      }
-                      size="sm"
-                    >
-                      {r.impact.toUpperCase()} IMPACT
-                    </Badge>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-transparent dark:border-slate-700/60 p-2.5 rounded-lg mt-2">
+                      <strong>Mitigation Strategy:</strong> {r.mitigation}
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-transparent dark:border-slate-700/60 p-2.5 rounded-lg mt-2">
-                    <strong>Mitigation Strategy:</strong> {r.mitigation}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {onApplyRisks && (
@@ -270,4 +279,7 @@ export const AIAdvisorModal: React.FC<AIAdvisorModalProps> = ({
       </div>
     </Modal>
   );
-};
+});
+
+AIAdvisorModal.displayName = "AIAdvisorModal";
+

@@ -26,7 +26,7 @@ export interface DashboardOverviewProps {
   isLoadingAI?: boolean;
 }
 
-export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
+export const DashboardOverview: React.FC<DashboardOverviewProps> = React.memo(({
   event,
   progress,
   onNavigateTab,
@@ -35,9 +35,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onTriggerAIRisks,
   isLoadingAI = false,
 }) => {
-  const upcomingTasks = event.timeline
-    .filter((t) => t.status !== "completed")
-    .slice(0, 4);
+  const upcomingTasks = React.useMemo(
+    () => event.timeline.filter((t) => t.status !== "completed").slice(0, 4),
+    [event.timeline]
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -284,4 +285,6 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       )}
     </div>
   );
-};
+});
+
+DashboardOverview.displayName = "DashboardOverview";

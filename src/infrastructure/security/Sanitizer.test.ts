@@ -14,6 +14,13 @@ describe("Sanitizer", () => {
     expect(sanitized).toContain("Hello World");
   });
 
+  it("strips zero-width and bidirectional override characters", () => {
+    const hiddenAttack = "Normal\u200BText\uFEFFWith\u202EHidden";
+    const sanitized = Sanitizer.sanitizeString(hiddenAttack);
+    expect(sanitized).toBe("NormalTextWithHidden");
+  });
+
+
   it("handles non-string inputs safely", () => {
     expect(Sanitizer.sanitizeString(null)).toBe("");
     expect(Sanitizer.sanitizeString(undefined)).toBe("");

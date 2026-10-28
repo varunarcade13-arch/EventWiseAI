@@ -30,6 +30,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!title.trim()) {
       setError("Task title is required.");
       titleInputRef.current?.focus();

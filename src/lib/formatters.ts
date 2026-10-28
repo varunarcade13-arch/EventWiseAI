@@ -1,13 +1,15 @@
+const defaultDateFormatter = new Intl.DateTimeFormat("en-US", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+
 export function formatDate(dateString: string): string {
   if (!dateString) return "Date not set";
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return "Invalid date";
 
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(date);
+  return defaultDateFormatter.format(date);
 }
 
 export function formatDaysRemaining(days: number): {

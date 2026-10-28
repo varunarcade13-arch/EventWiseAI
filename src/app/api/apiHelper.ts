@@ -66,6 +66,20 @@ export class ResponseParsingError extends Error {
   }
 }
 
+export const API_SECURITY_HEADERS: Record<string, string> = {
+  "Cache-Control": "no-store, max-age=0, must-revalidate",
+  "Pragma": "no-cache",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+};
+
+export function apiSuccess<T extends object>(data: T, status: number = 200): NextResponse {
+  return NextResponse.json(data, {
+    status,
+    headers: API_SECURITY_HEADERS,
+  });
+}
+
 /**
  * Strips any potential secret tokens or long credential hashes from log/error messages.
  */
@@ -80,7 +94,16 @@ export function checkRateLimit(request: Request): NextResponse | null {
   if (request.method !== "GET" && request.method !== "POST") {
     return NextResponse.json(
       { error: "Method Not Allowed. Supported methods: GET, POST." },
-      { status: 405 }
+      { status: 405, headers: API_SECURITY_HEADERS }
+    );
+  }
+
+  // Sec-Fetch-Site check (mitigates CSRF and unauthorized cross-site invocations)
+  const secFetchSite = request.headers.get("sec-fetch-site");
+  if (secFetchSite === "cross-site") {
+    return NextResponse.json(
+      { error: "Cross-site requests are not permitted." },
+      { status: 403, headers: API_SECURITY_HEADERS }
     );
   }
 
@@ -91,13 +114,13 @@ export function checkRateLimit(request: Request): NextResponse | null {
     if (isNaN(contentLength) || contentLength < 0) {
       return NextResponse.json(
         { error: "Invalid Content-Length header." },
-        { status: 400 }
+        { status: 400, headers: API_SECURITY_HEADERS }
       );
     }
     if (contentLength > 100_000) {
       return NextResponse.json(
         { error: "Payload too large. Maximum allowed size is 100KB." },
-        { status: 413 }
+        { status: 413, headers: API_SECURITY_HEADERS }
       );
     }
   }
@@ -108,7 +131,7 @@ export function checkRateLimit(request: Request): NextResponse | null {
     if (!contentType || !contentType.toLowerCase().includes("application/json")) {
       return NextResponse.json(
         { error: "Unsupported Media Type. Content-Type must be application/json." },
-        { status: 415 }
+        { status: 415, headers: API_SECURITY_HEADERS }
       );
     }
   }
@@ -122,13 +145,13 @@ export function checkRateLimit(request: Request): NextResponse | null {
       if (host && originHost !== host) {
         return NextResponse.json(
           { error: "Cross-origin requests are not permitted." },
-          { status: 403 }
+          { status: 403, headers: API_SECURITY_HEADERS }
         );
       }
     } catch {
       return NextResponse.json(
         { error: "Malformed origin header." },
-        { status: 400 }
+        { status: 400, headers: API_SECURITY_HEADERS }
       );
     }
   }
@@ -150,6 +173,7 @@ export function checkRateLimit(request: Request): NextResponse | null {
       {
         status: 429,
         headers: {
+          ...API_SECURITY_HEADERS,
           "Retry-After": String(retrySeconds),
         },
       }
@@ -157,6 +181,7 @@ export function checkRateLimit(request: Request): NextResponse | null {
   }
   return null;
 }
+
 
 export function handleApiError(error: unknown): NextResponse {
   const errorObj = error as {
@@ -192,7 +217,7 @@ export function handleApiError(error: unknown): NextResponse {
           "Gemini API key is not configured. Please set the GEMINI_API_KEY environment variable in your Vercel project settings or .env.local file.",
         code: "CONFIG_ERROR",
       },
-      { status: 503 }
+      { status: 503, headers: API_SECURITY_HEADERS }
     );
   }
 
@@ -210,7 +235,7 @@ export function handleApiError(error: unknown): NextResponse {
         error: "Gemini API authentication failed. Please verify your GEMINI_API_KEY.",
         code: "AUTH_ERROR",
       },
-      { status: 401 }
+      { status: 401, headers: API_SECURITY_HEADERS }
     );
   }
 
@@ -232,7 +257,7 @@ export function handleApiError(error: unknown): NextResponse {
         error: isJsonSyntax ? "Invalid or malformed JSON payload in request." : safeMessage,
         code: "VALIDATION_ERROR",
       },
-      { status: 400 }
+      { status: 400, headers: API_SECURITY_HEADERS }
     );
   }
 
@@ -248,7 +273,7 @@ export function handleApiError(error: unknown): NextResponse {
         error: "Gemini API rate limit or quota exceeded. Please wait a moment and try again.",
         code: "RATE_LIMIT_ERROR",
       },
-      { status: 429, headers: { "Retry-After": "10" } }
+      { status: 429, headers: { ...API_SECURITY_HEADERS, "Retry-After": "10" } }
     );
   }
 
@@ -265,7 +290,7 @@ export function handleApiError(error: unknown): NextResponse {
         error: "The Gemini AI request timed out. Please try again.",
         code: "TIMEOUT_ERROR",
       },
-      { status: 504 }
+      { status: 504, headers: API_SECURITY_HEADERS }
     );
   }
 
@@ -280,7 +305,7 @@ export function handleApiError(error: unknown): NextResponse {
         error: "Unable to parse structured AI output from Gemini. Please retry.",
         code: "RESPONSE_PARSING_ERROR",
       },
-      { status: 502 }
+      { status: 502, headers: API_SECURITY_HEADERS }
     );
   }
 
@@ -295,7 +320,7 @@ export function handleApiError(error: unknown): NextResponse {
         error: "Gemini AI service is currently experiencing high demand. Please try again shortly.",
         code: "SERVICE_UNAVAILABLE",
       },
-      { status: 503 }
+      { status: 503, headers: API_SECURITY_HEADERS }
     );
   }
 
@@ -305,6 +330,7 @@ export function handleApiError(error: unknown): NextResponse {
       error: "Unable to process your request at this time. Please try again.",
       code: "AI_SERVICE_ERROR",
     },
-    { status: 500 }
+    { status: 500, headers: API_SECURITY_HEADERS }
   );
 }
+

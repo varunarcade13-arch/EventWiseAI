@@ -14,7 +14,7 @@ export interface HeaderProps {
   onToggleTheme?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header: React.FC<HeaderProps> = React.memo(({
   events,
   activeEvent,
   onSelectEvent,
@@ -116,6 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
             size="sm"
             variant="ai"
             onClick={onToggleAIChat}
+            aria-haspopup="dialog"
             leftIcon={<Sparkles className="w-4 h-4 animate-pulse-subtle" />}
             className="text-xs sm:text-sm"
           >
@@ -125,4 +126,6 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
     </header>
   );
-};
+});
+
+Header.displayName = "Header";

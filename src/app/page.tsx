@@ -35,6 +35,7 @@ import {
   Sparkles,
   Plus,
 } from "lucide-react";
+import { EventPlanMapper } from "@/domain/services/EventPlanMapper";
 import { formatDate } from "@/lib/formatters";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -123,6 +124,41 @@ export default function HomePage() {
     return ProgressTracker.calculateProgress(activeEvent);
   }, [activeEvent]);
 
+  const navTabs = useMemo(
+    () => [
+      {
+        id: "overview",
+        label: "Overview",
+        icon: <LayoutDashboard className="w-4 h-4" />,
+      },
+      {
+        id: "budget",
+        label: "Budget",
+        icon: <DollarSign className="w-4 h-4" />,
+        badge: activeEvent ? activeEvent.budgetCategories.length : 0,
+      },
+      {
+        id: "timeline",
+        label: "Timeline",
+        icon: <Calendar className="w-4 h-4" />,
+        badge: activeEvent ? activeEvent.timeline.length : 0,
+      },
+      {
+        id: "vendors",
+        label: "Vendors",
+        icon: <Briefcase className="w-4 h-4" />,
+        badge: activeEvent ? activeEvent.vendors.length : 0,
+      },
+      {
+        id: "events",
+        label: "All Events",
+        icon: <Layers className="w-4 h-4" />,
+        badge: events.length,
+      },
+    ],
+    [activeEvent, events.length]
+  );
+
   // Helper to persist event updates
   const saveAndSyncEvent = async (updated: EventModel) => {
     const saved = await repository.save(updated);
@@ -179,6 +215,10 @@ export default function HomePage() {
       }
     }
 
+    const planMapped = initialPlan
+      ? EventPlanMapper.mapPlanToEventFields(initialPlan, newId)
+      : null;
+
     const newEvent: EventModel = {
       id: newId,
       name: data.name,
@@ -191,91 +231,15 @@ export default function HomePage() {
       isDemo: false,
       createdAt: now,
       updatedAt: now,
-      budgetCategories: initialPlan
-        ? initialPlan.estimatedBudget.map((b, i) => ({
-            id: `cat_${newId}_${i}`,
-            name: b.name,
-            allocated: b.allocated,
-            actual: 0,
-            notes: b.notes,
-          }))
-        : [
-            {
-              id: `cat_${newId}_venue`,
-              name: "Venue",
-              allocated: Math.round(data.totalBudget * 0.4),
-              actual: 0,
-            },
-            {
-              id: `cat_${newId}_catering`,
-              name: "Catering",
-              allocated: Math.round(data.totalBudget * 0.3),
-              actual: 0,
-            },
-            {
-              id: `cat_${newId}_decor`,
-              name: "Decor & Production",
-              allocated: Math.round(data.totalBudget * 0.2),
-              actual: 0,
-            },
-            {
-              id: `cat_${newId}_contingency`,
-              name: "Contingency Fund",
-              allocated: Math.round(data.totalBudget * 0.1),
-              actual: 0,
-            },
-          ],
-      timeline: initialPlan
-        ? initialPlan.timeline.map((t, i) => ({
-            id: `task_${newId}_${i}`,
-            title: t.title,
-            dueDate: t.dueDate,
-            status: "not_started",
-            priority: t.priority || "medium",
-            category: t.category || "General",
-            assignedTo: t.assignedTo || "",
-          }))
-        : [
-            {
-              id: `task_${newId}_1`,
-              title: `Lock in venue for ${data.name}`,
-              dueDate: data.date,
-              status: "not_started",
-              priority: "high",
-              category: "Venue",
-            },
-            {
-              id: `task_${newId}_2`,
-              title: "Send invitations to guests",
-              dueDate: data.date,
-              status: "not_started",
-              priority: "medium",
-              category: "Invitations",
-            },
-          ],
-      vendors: initialPlan
-        ? initialPlan.vendors.map((v, i) => ({
-            id: `vendor_${newId}_${i}`,
-            name: v.name,
-            category: v.category,
-            status: "not_contacted",
-            estimatedCost: v.estimatedCost,
-            actualCost: v.actualCost,
-            notes: v.notes,
-          }))
-        : [],
-      recommendations: initialPlan
-        ? initialPlan.recommendations.map((r, i) => ({
-            ...r,
-            id: r.id || `rec_${newId}_${i}`,
-          }))
-        : [],
-      risks: initialPlan
-        ? initialPlan.risks.map((rk, i) => ({
-            ...rk,
-            id: rk.id || `risk_${newId}_${i}`,
-          }))
-        : [],
+      budgetCategories:
+        planMapped?.budgetCategories ??
+        EventPlanMapper.createDefaultCategories(data.totalBudget, newId),
+      timeline:
+        planMapped?.timeline ??
+        EventPlanMapper.createDefaultTimeline(data.name, data.date, newId),
+      vendors: planMapped?.vendors ?? [],
+      recommendations: planMapped?.recommendations ?? [],
+      risks: planMapped?.risks ?? [],
     };
 
     const saved = await repository.save(newEvent);
@@ -404,7 +368,7 @@ export default function HomePage() {
 
   // --- Handlers: AI Features ---
   const handleTriggerAIPlan = async () => {
-    if (!activeEvent) return;
+    if (!activeEvent || isLoadingAI) return;
     try {
       setIsLoadingAI(true);
       showToast("Generating comprehensive event plan with Gemini...", "info");
@@ -424,45 +388,8 @@ export default function HomePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      // Apply to active event
-      const plan: EventPlan = data.plan;
-      const updated: EventModel = {
-        ...activeEvent,
-        budgetCategories: plan.estimatedBudget.map((b, i) => ({
-          id: `ai_cat_${Date.now()}_${i}`,
-          name: b.name,
-          allocated: b.allocated,
-          actual: 0,
-          notes: b.notes,
-        })),
-        timeline: plan.timeline.map((t, i) => ({
-          id: `ai_task_${Date.now()}_${i}`,
-          title: t.title,
-          dueDate: t.dueDate,
-          status: "not_started",
-          priority: t.priority || "medium",
-          category: t.category || "General",
-          assignedTo: t.assignedTo || "",
-        })),
-        vendors: plan.vendors.map((v, i) => ({
-          id: `ai_vendor_${Date.now()}_${i}`,
-          name: v.name,
-          category: v.category,
-          status: "not_contacted",
-          estimatedCost: v.estimatedCost,
-          actualCost: v.actualCost,
-          notes: v.notes,
-        })),
-        recommendations: plan.recommendations.map((r, i) => ({
-          ...r,
-          id: r.id || `ai_rec_${Date.now()}_${i}`,
-        })),
-        risks: plan.risks.map((rk, i) => ({
-          ...rk,
-          id: rk.id || `ai_risk_${Date.now()}_${i}`,
-        })),
-        updatedAt: new Date().toISOString(),
-      };
+      // Apply to active event using EventPlanMapper
+      const updated = EventPlanMapper.applyPlanToEvent(activeEvent, data.plan);
 
       await saveAndSyncEvent(updated);
       showToast("AI event plan generated and applied successfully!", "success");
@@ -477,7 +404,7 @@ export default function HomePage() {
   };
 
   const handleTriggerAIAdvisor = async () => {
-    if (!activeEvent) return;
+    if (!activeEvent || isLoadingAI) return;
     try {
       setIsLoadingAI(true);
       showToast("Analyzing budget allocations with Gemini...", "info");
@@ -509,7 +436,7 @@ export default function HomePage() {
   };
 
   const handleTriggerAITimeline = async () => {
-    if (!activeEvent) return;
+    if (!activeEvent || isLoadingAI) return;
     try {
       setIsLoadingAI(true);
       showToast("Generating milestones timeline with Gemini...", "info");
@@ -552,7 +479,7 @@ export default function HomePage() {
   };
 
   const handleTriggerAIVendors = async () => {
-    if (!activeEvent) return;
+    if (!activeEvent || isLoadingAI) return;
     try {
       setIsLoadingAI(true);
       showToast("Generating vendor recommendations with Gemini...", "info");
@@ -599,7 +526,7 @@ export default function HomePage() {
   };
 
   const handleTriggerAIIdeas = async () => {
-    if (!activeEvent) return;
+    if (!activeEvent || isLoadingAI) return;
     try {
       setIsLoadingAI(true);
       showToast("Generating creative ideas with Gemini...", "info");
@@ -629,7 +556,7 @@ export default function HomePage() {
   };
 
   const handleTriggerAIRisks = async () => {
-    if (!activeEvent) return;
+    if (!activeEvent || isLoadingAI) return;
     try {
       setIsLoadingAI(true);
       showToast("Assessing contingency risks with Gemini...", "info");
@@ -679,43 +606,7 @@ export default function HomePage() {
 
   const handleApplyPlanFromChat = async (plan: EventPlan) => {
     if (!activeEvent) return;
-    const updated: EventModel = {
-      ...activeEvent,
-      budgetCategories: plan.estimatedBudget.map((b, i) => ({
-        id: `ai_chat_cat_${Date.now()}_${i}`,
-        name: b.name,
-        allocated: b.allocated,
-        actual: 0,
-        notes: b.notes,
-      })),
-      timeline: plan.timeline.map((t, i) => ({
-        id: `ai_chat_task_${Date.now()}_${i}`,
-        title: t.title,
-        dueDate: t.dueDate,
-        status: "not_started",
-        priority: t.priority || "medium",
-        category: t.category || "General",
-        assignedTo: t.assignedTo || "",
-      })),
-      vendors: plan.vendors.map((v, i) => ({
-        id: `ai_chat_vendor_${Date.now()}_${i}`,
-        name: v.name,
-        category: v.category,
-        status: "not_contacted",
-        estimatedCost: v.estimatedCost,
-        actualCost: v.actualCost,
-        notes: v.notes,
-      })),
-      recommendations: plan.recommendations.map((r, i) => ({
-        ...r,
-        id: r.id || `ai_chat_rec_${Date.now()}_${i}`,
-      })),
-      risks: plan.risks.map((rk, i) => ({
-        ...rk,
-        id: rk.id || `ai_chat_risk_${Date.now()}_${i}`,
-      })),
-      updatedAt: new Date().toISOString(),
-    };
+    const updated = EventPlanMapper.applyPlanToEvent(activeEvent, plan);
     await saveAndSyncEvent(updated);
     showToast("Chat plan applied to event successfully!", "success");
   };
@@ -750,38 +641,6 @@ export default function HomePage() {
       </div>
     );
   }
-
-  const navTabs = [
-    {
-      id: "overview",
-      label: "Overview",
-      icon: <LayoutDashboard className="w-4 h-4" />,
-    },
-    {
-      id: "budget",
-      label: "Budget",
-      icon: <DollarSign className="w-4 h-4" />,
-      badge: activeEvent.budgetCategories.length,
-    },
-    {
-      id: "timeline",
-      label: "Timeline",
-      icon: <Calendar className="w-4 h-4" />,
-      badge: activeEvent.timeline.length,
-    },
-    {
-      id: "vendors",
-      label: "Vendors",
-      icon: <Briefcase className="w-4 h-4" />,
-      badge: activeEvent.vendors.length,
-    },
-    {
-      id: "events",
-      label: "All Events",
-      icon: <Layers className="w-4 h-4" />,
-      badge: events.length,
-    },
-  ];
 
   return (
     <div className="flex-1 flex flex-col min-h-screen">
@@ -847,6 +706,8 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setIsAIChatOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={isAIChatOpen}
               className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-brand-50 to-indigo-50 dark:from-brand-950/60 dark:to-indigo-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-700 hover:shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" aria-hidden="true" />

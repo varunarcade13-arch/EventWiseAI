@@ -17,7 +17,18 @@ export interface BudgetManagerProps {
   isLoadingAI?: boolean;
 }
 
-export const BudgetManager: React.FC<BudgetManagerProps> = ({
+const BUDGET_PALETTE = [
+  "bg-indigo-500",
+  "bg-purple-500",
+  "bg-emerald-500",
+  "bg-amber-500",
+  "bg-rose-500",
+  "bg-cyan-500",
+  "bg-blue-600",
+  "bg-fuchsia-500",
+];
+
+export const BudgetManager: React.FC<BudgetManagerProps> = React.memo(({
   event,
   onAddCategory,
   onDeleteCategory,
@@ -25,9 +36,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   isLoadingAI = false,
 }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const summary = BudgetCalculator.calculateSummary(
-    event.totalBudget,
-    event.budgetCategories
+  const summary = React.useMemo(
+    () => BudgetCalculator.calculateSummary(event.totalBudget, event.budgetCategories),
+    [event.totalBudget, event.budgetCategories]
   );
 
   return (
@@ -162,17 +173,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                   summary.totalAllocated > 0
                     ? (cat.allocated / summary.totalAllocated) * 100
                     : 0;
-                const palette = [
-                  "bg-indigo-500",
-                  "bg-purple-500",
-                  "bg-emerald-500",
-                  "bg-amber-500",
-                  "bg-rose-500",
-                  "bg-cyan-500",
-                  "bg-blue-600",
-                  "bg-fuchsia-500",
-                ];
-                const color = palette[idx % palette.length];
+                const color = BUDGET_PALETTE[idx % BUDGET_PALETTE.length];
                 return (
                   <div
                     key={cat.id}
@@ -255,7 +256,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                           type="button"
                           onClick={() => onDeleteCategory(cat.id)}
                           aria-label={`Delete ${cat.name} category`}
-                          className="p-1 rounded-lg text-slate-400 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                          className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                         >
                           <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </button>
@@ -310,4 +311,6 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
       />
     </div>
   );
-};
+});
+
+BudgetManager.displayName = "BudgetManager";

@@ -25,7 +25,43 @@ export interface TimelineViewProps {
   isLoadingAI?: boolean;
 }
 
-export const TimelineView: React.FC<TimelineViewProps> = ({
+const PRIORITY_BADGE_MAP: Record<
+  TaskPriority,
+  { variant: "danger" | "warning" | "neutral"; label: string }
+> = {
+  high: { variant: "danger", label: "High" },
+  medium: { variant: "warning", label: "Medium" },
+  low: { variant: "neutral", label: "Low" },
+};
+
+const STATUS_MAP: Record<
+  TaskStatus,
+  { label: string; icon: React.ReactNode; color: string }
+> = {
+  not_started: {
+    label: "Not Started",
+    icon: <Clock className="w-4 h-4 text-slate-400" />,
+    color: "border-slate-300 dark:border-slate-700",
+  },
+  in_progress: {
+    label: "In Progress",
+    icon: <Clock className="w-4 h-4 text-amber-500 animate-spin" />,
+    color: "border-amber-400 text-amber-600",
+  },
+  completed: {
+    label: "Completed",
+    icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />,
+    color: "border-emerald-500 text-emerald-600 line-through text-slate-400",
+  },
+};
+
+const cycleStatus = (currentStatus: TaskStatus): TaskStatus => {
+  if (currentStatus === "not_started") return "in_progress";
+  if (currentStatus === "in_progress") return "completed";
+  return "not_started";
+};
+
+export const TimelineView: React.FC<TimelineViewProps> = React.memo(({
   event,
   onAddTask,
   onUpdateTaskStatus,
@@ -36,49 +72,30 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   const [filterStatus, setFilterStatus] = useState<"all" | TaskStatus>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const sortedTasks = TimelineCalculator.sortByDueDate(event.timeline);
-  const overdueTasks = TimelineCalculator.getOverdueTasks(event.timeline);
+  const { sortedTasks, overdueTasks, statusCounts } = React.useMemo(() => {
+    const sorted = TimelineCalculator.sortByDueDate(event.timeline);
+    const overdue = TimelineCalculator.getOverdueTasks(event.timeline);
+    const counts = { not_started: 0, in_progress: 0, completed: 0 };
+    for (const t of event.timeline) {
+      if (t.status in counts) {
+        counts[t.status]++;
+      }
+    }
+    return { sortedTasks: sorted, overdueTasks: overdue, statusCounts: counts };
+  }, [event.timeline]);
 
-  const filteredTasks =
-    filterStatus === "all"
-      ? sortedTasks
-      : sortedTasks.filter((t) => t.status === filterStatus);
+  const filteredTasks = React.useMemo(
+    () =>
+      filterStatus === "all"
+        ? sortedTasks
+        : sortedTasks.filter((t) => t.status === filterStatus),
+    [filterStatus, sortedTasks]
+  );
 
-  const priorityBadgeMap: Record<
-    TaskPriority,
-    { variant: "danger" | "warning" | "neutral"; label: string }
-  > = {
-    high: { variant: "danger", label: "High" },
-    medium: { variant: "warning", label: "Medium" },
-    low: { variant: "neutral", label: "Low" },
-  };
-
-  const statusMap: Record<
-    TaskStatus,
-    { label: string; icon: React.ReactNode; color: string }
-  > = {
-    not_started: {
-      label: "Not Started",
-      icon: <Clock className="w-4 h-4 text-slate-400" />,
-      color: "border-slate-300 dark:border-slate-700",
-    },
-    in_progress: {
-      label: "In Progress",
-      icon: <Clock className="w-4 h-4 text-amber-500 animate-spin" />,
-      color: "border-amber-400 text-amber-600",
-    },
-    completed: {
-      label: "Completed",
-      icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />,
-      color: "border-emerald-500 text-emerald-600 line-through text-slate-400",
-    },
-  };
-
-  const cycleStatus = (currentStatus: TaskStatus): TaskStatus => {
-    if (currentStatus === "not_started") return "in_progress";
-    if (currentStatus === "in_progress") return "completed";
-    return "not_started";
-  };
+  const todayStr = React.useMemo(
+    () => new Date().toISOString().split("T")[0]!,
+    []
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -139,21 +156,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
               { id: "all", label: `All (${event.timeline.length})` },
               {
                 id: "not_started",
-                label: `Not Started (${
-                  event.timeline.filter((t) => t.status === "not_started").length
-                })`,
+                label: `Not Started (${statusCounts.not_started})`,
               },
               {
                 id: "in_progress",
-                label: `In Progress (${
-                  event.timeline.filter((t) => t.status === "in_progress").length
-                })`,
+                label: `In Progress (${statusCounts.in_progress})`,
               },
               {
                 id: "completed",
-                label: `Completed (${
-                  event.timeline.filter((t) => t.status === "completed").length
-                })`,
+                label: `Completed (${statusCounts.completed})`,
               },
             ] as const
           ).map((btn) => (
@@ -178,7 +189,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           <div className="flex flex-col gap-2.5">
             {filteredTasks.map((task) => {
               const isOverdue =
-                task.dueDate < new Date().toISOString().split("T")[0]! &&
+                task.dueDate < todayStr &&
                 task.status !== "completed";
               return (
                 <div
@@ -195,11 +206,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       onClick={() =>
                         onUpdateTaskStatus(task.id, cycleStatus(task.status))
                       }
-                      title={`Status: ${statusMap[task.status].label}. Click to toggle.`}
-                      aria-label={`Toggle status for task: ${task.title}`}
+                      title={`Status: ${STATUS_MAP[task.status].label}. Click to toggle.`}
+                      aria-label={`Toggle status for task: ${task.title}. Current: ${STATUS_MAP[task.status].label}`}
                       className="mt-0.5 sm:mt-0 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                     >
-                      {statusMap[task.status].icon}
+                      {STATUS_MAP[task.status].icon}
                     </button>
 
                     <div className="min-w-0 flex-1">
@@ -236,10 +247,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
                   <div className="flex items-center gap-2.5 shrink-0 ml-3">
                     <Badge
-                      variant={priorityBadgeMap[task.priority].variant}
+                      variant={PRIORITY_BADGE_MAP[task.priority].variant}
                       size="sm"
                     >
-                      {priorityBadgeMap[task.priority].label}
+                      {PRIORITY_BADGE_MAP[task.priority].label}
                     </Badge>
 
                     <select
@@ -259,7 +270,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       type="button"
                       onClick={() => onDeleteTask(task.id)}
                       aria-label={`Delete task ${task.title}`}
-                      className="p-1.5 rounded-lg text-slate-400 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
@@ -285,4 +296,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       />
     </div>
   );
-};
+});
+
+TimelineView.displayName = "TimelineView";
+

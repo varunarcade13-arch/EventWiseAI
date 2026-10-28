@@ -29,7 +29,30 @@ export interface VendorChecklistProps {
   isLoadingAI?: boolean;
 }
 
-export const VendorChecklist: React.FC<VendorChecklistProps> = ({
+const STATUS_MAP: Record<
+  VendorStatus,
+  { label: string; variant: "neutral" | "warning" | "success" }
+> = {
+  not_contacted: { label: "Not Contacted", variant: "neutral" },
+  contacted: { label: "In Discussion", variant: "warning" },
+  booked: { label: "Booked", variant: "success" },
+};
+
+const CATEGORIES_LIST: Array<{ id: "all" | VendorCategory; label: string }> = [
+  { id: "all", label: "All Categories" },
+  { id: "venue", label: "Venue" },
+  { id: "catering", label: "Catering" },
+  { id: "photography", label: "Photography" },
+  { id: "decoration", label: "Decoration" },
+  { id: "entertainment", label: "Entertainment" },
+  { id: "transportation", label: "Transport" },
+  { id: "invitations", label: "Invitations" },
+  { id: "makeup", label: "Makeup" },
+  { id: "security", label: "Security" },
+  { id: "miscellaneous", label: "Misc" },
+];
+
+export const VendorChecklist: React.FC<VendorChecklistProps> = React.memo(({
   event,
   onAddVendor,
   onUpdateVendorStatus,
@@ -40,33 +63,13 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<"all" | VendorCategory>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const filteredVendors =
-    selectedCategory === "all"
-      ? event.vendors
-      : event.vendors.filter((v) => v.category === selectedCategory);
-
-  const statusMap: Record<
-    VendorStatus,
-    { label: string; variant: "neutral" | "warning" | "success" }
-  > = {
-    not_contacted: { label: "Not Contacted", variant: "neutral" },
-    contacted: { label: "In Discussion", variant: "warning" },
-    booked: { label: "Booked", variant: "success" },
-  };
-
-  const categoriesList: Array<{ id: "all" | VendorCategory; label: string }> = [
-    { id: "all", label: "All Categories" },
-    { id: "venue", label: "Venue" },
-    { id: "catering", label: "Catering" },
-    { id: "photography", label: "Photography" },
-    { id: "decoration", label: "Decoration" },
-    { id: "entertainment", label: "Entertainment" },
-    { id: "transportation", label: "Transport" },
-    { id: "invitations", label: "Invitations" },
-    { id: "makeup", label: "Makeup" },
-    { id: "security", label: "Security" },
-    { id: "miscellaneous", label: "Misc" },
-  ];
+  const filteredVendors = React.useMemo(
+    () =>
+      selectedCategory === "all"
+        ? event.vendors
+        : event.vendors.filter((v) => v.category === selectedCategory),
+    [selectedCategory, event.vendors]
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -105,7 +108,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
           aria-label="Filter vendors by category"
           className="flex items-center gap-1.5 mb-4 pb-3 border-b border-slate-100 dark:border-slate-700/80 overflow-x-auto text-xs no-scrollbar"
         >
-          {categoriesList.map((cat) => (
+          {CATEGORIES_LIST.map((cat) => (
             <button
               key={cat.id}
               type="button"
@@ -126,7 +129,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
         {filteredVendors.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredVendors.map((vendor) => {
-              const statusInfo = statusMap[vendor.status] || {
+              const statusInfo = STATUS_MAP[vendor.status] || {
                 label: vendor.status,
                 variant: "neutral",
               };
@@ -155,7 +158,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                         type="button"
                         onClick={() => onDeleteVendor(vendor.id)}
                         aria-label={`Delete vendor ${vendor.name}`}
-                        className="p-1 rounded-lg text-slate-400 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                        className="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                       >
                         <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </button>
@@ -265,4 +268,6 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
       />
     </div>
   );
-};
+});
+
+VendorChecklist.displayName = "VendorChecklist";

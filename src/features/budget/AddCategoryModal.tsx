@@ -26,6 +26,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!name.trim()) {
       setError("Category name is required.");
       nameInputRef.current?.focus();

@@ -1,3 +1,4 @@
+import { apiSuccess, API_SECURITY_HEADERS, checkRateLimit } from "@/app/api/apiHelper";
 import { GEMINI_CONFIG } from "@/infrastructure/ai/geminiConfig";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
@@ -5,13 +6,18 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const rateLimitResponse = checkRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
   return handleDiagnostic();
 }
 
-export async function POST() {
+export async function POST(request: Request) {
+  const rateLimitResponse = checkRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
   return handleDiagnostic();
 }
+
 
 async function handleDiagnostic(): Promise<NextResponse> {
   const rawKey = process.env.GEMINI_API_KEY;
@@ -25,7 +31,7 @@ async function handleDiagnostic(): Promise<NextResponse> {
         apiKeyConfigured: false,
         error: "GEMINI_API_KEY environment variable is not defined in process.env",
       },
-      { status: 503 }
+      { status: 503, headers: API_SECURITY_HEADERS }
     );
   }
 
@@ -56,7 +62,7 @@ async function handleDiagnostic(): Promise<NextResponse> {
     clearTimeout(timeout);
 
     const text = response.response.text();
-    return NextResponse.json(
+    return apiSuccess(
       {
         status: "ok",
         model: GEMINI_CONFIG.primaryModel,
@@ -64,7 +70,7 @@ async function handleDiagnostic(): Promise<NextResponse> {
         keyMeta,
         timestamp: new Date().toISOString(),
       },
-      { status: 200 }
+      200
     );
   } catch (err: unknown) {
     clearTimeout(timeout);
@@ -96,7 +102,8 @@ async function handleDiagnostic(): Promise<NextResponse> {
         },
         timestamp: new Date().toISOString(),
       },
-      { status: 502 }
+      { status: 502, headers: API_SECURITY_HEADERS }
     );
   }
 }
+

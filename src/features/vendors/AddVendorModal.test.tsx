@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AddVendorModal } from "./AddVendorModal";
 
@@ -129,4 +129,30 @@ describe("AddVendorModal component", () => {
     );
     expect(handleClose).toHaveBeenCalled();
   });
+
+  it("prevents double submission when already submitting", async () => {
+    const user = userEvent.setup();
+    let resolveAdd: () => void;
+    const handleAdd = vi.fn().mockImplementation(() => new Promise<void>((resolve) => { resolveAdd = resolve; }));
+
+    render(
+      <AddVendorModal
+        isOpen={true}
+        onClose={vi.fn()}
+        currency="INR"
+        onAdd={handleAdd}
+      />
+    );
+
+    await user.type(screen.getByLabelText(/vendor \/ business name/i), "Catering Co");
+    const saveButton = screen.getByRole("button", { name: /save vendor/i });
+    await user.click(saveButton);
+
+    const form = screen.getByRole("dialog").querySelector("form")!;
+    fireEvent.submit(form);
+
+    expect(handleAdd).toHaveBeenCalledTimes(1);
+    resolveAdd!();
+  });
 });
+

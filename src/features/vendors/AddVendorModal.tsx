@@ -33,6 +33,7 @@ export const AddVendorModal: React.FC<AddVendorModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!name.trim()) {
       setError("Vendor name is required.");
       nameInputRef.current?.focus();

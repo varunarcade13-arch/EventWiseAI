@@ -126,7 +126,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
   }, [messages, isOpen]);
 
   // Suggested quick prompts as specified in prompt
-  const suggestedPrompts = [
+  const suggestedPrompts = React.useMemo(() => [
     activeEvent
       ? `Plan my ${activeEvent.type} for ${activeEvent.expectedGuests} guests with budget ${activeEvent.currency} ${activeEvent.totalBudget.toLocaleString()}`
       : "Plan my wedding for 200 guests with a budget of ₹15 lakh",
@@ -137,7 +137,7 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({
     "What vendors do I need?",
     "What could go wrong with this plan?",
     "Suggest alternatives if my budget is exceeded",
-  ];
+  ], [activeEvent]);
 
   const handleSend = async (messageText: string) => {
     const textToSend = messageText.trim();

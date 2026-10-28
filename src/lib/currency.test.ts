@@ -1,7 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
-import { formatCurrency, getCurrencySymbol } from "./currency";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { clearCurrencyFormatters, formatCurrency, getCurrencySymbol } from "./currency";
 
 describe("currency utilities", () => {
+  beforeEach(() => {
+    clearCurrencyFormatters();
+  });
+
   it("returns appropriate currency symbols", () => {
     expect(getCurrencySymbol("INR")).toBe("₹");
     expect(getCurrencySymbol("USD")).toBe("$");

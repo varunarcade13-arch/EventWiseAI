@@ -345,5 +345,33 @@ describe("apiHelper", () => {
       const res = checkRateLimit(req);
       expect(res).toBeNull();
     });
+
+    it("rejects cross-site requests via sec-fetch-site header with 403 Forbidden", () => {
+      const req = new Request("http://localhost/api/test", {
+        method: "POST",
+        headers: {
+          "sec-fetch-site": "cross-site",
+          "content-length": "50",
+          "content-type": "application/json",
+        },
+      });
+      const res = checkRateLimit(req);
+      expect(res).not.toBeNull();
+      expect(res?.status).toBe(403);
+    });
   });
+
+  describe("apiSuccess", () => {
+    it("returns NextResponse with security and cache-control headers", async () => {
+      const { apiSuccess } = await import("./apiHelper");
+      const res = apiSuccess({ data: "ok" }, 201);
+      expect(res.status).toBe(201);
+      expect(res.headers.get("Cache-Control")).toBe("no-store, max-age=0, must-revalidate");
+      expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
+      expect(res.headers.get("X-Frame-Options")).toBe("DENY");
+      const json = await res.json();
+      expect(json.data).toBe("ok");
+    });
+  });
+
 });

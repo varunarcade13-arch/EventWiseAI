@@ -1,4 +1,4 @@
-import { checkRateLimit, handleApiError } from "@/app/api/apiHelper";
+import { apiSuccess, checkRateLimit, handleApiError } from "@/app/api/apiHelper";
 import { GeminiAIPlannerService } from "@/infrastructure/ai/GeminiAIPlannerService";
 import { Sanitizer } from "@/infrastructure/security/Sanitizer";
 import { EventType } from "@/types/event";
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       expectedGuests: parseResult.data.expectedGuests,
     });
 
-    return NextResponse.json({ success: true, ideas });
+    return apiSuccess({ success: true, ideas });
   } catch (error) {
     return handleApiError(error);
   }

@@ -39,6 +39,42 @@ describe("/api/ai/chat route", () => {
     expect(json.message).toContain("budget allocation");
   });
 
+  it("handles request with context including location and without context", async () => {
+    vi.mocked(GeminiAIPlannerService.prototype.chat).mockResolvedValue({
+      responseText: "General suggestions",
+      suggestedPlan: undefined,
+    });
+
+    const reqWithLocation = new Request("http://localhost/api/ai/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "Venue ideas?" }],
+        context: { name: "Reception", location: "Downtown Hall" },
+      }),
+    });
+    const res1 = await POST(reqWithLocation);
+    expect(res1.status).toBe(200);
+
+    const reqLocationOnly = new Request("http://localhost/api/ai/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "Venue ideas?" }],
+        context: { location: "Downtown Hall" },
+      }),
+    });
+    const resLocationOnly = await POST(reqLocationOnly);
+    expect(resLocationOnly.status).toBe(200);
+
+    const reqNoContext = new Request("http://localhost/api/ai/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "General question" }],
+      }),
+    });
+    const res2 = await POST(reqNoContext);
+    expect(res2.status).toBe(200);
+  });
+
   it("returns 400 on empty or invalid messages", async () => {
     const req = new Request("http://localhost/api/ai/chat", {
       method: "POST",

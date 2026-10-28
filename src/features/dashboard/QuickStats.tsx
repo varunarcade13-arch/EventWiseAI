@@ -10,7 +10,7 @@ export interface QuickStatsProps {
   progress: PlanningProgress;
 }
 
-export const QuickStats: React.FC<QuickStatsProps> = ({ event, progress }) => {
+export const QuickStats: React.FC<QuickStatsProps> = React.memo(({ event, progress }) => {
   const daysInfo = formatDaysRemaining(progress.daysRemaining);
 
   return (
@@ -88,4 +88,6 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ event, progress }) => {
       </Card>
     </div>
   );
-};
+});
+
+QuickStats.displayName = "QuickStats";

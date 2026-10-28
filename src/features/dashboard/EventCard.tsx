@@ -6,7 +6,7 @@ import { formatCurrency } from "@/lib/currency";
 import { formatDate } from "@/lib/formatters";
 import { EventModel } from "@/types/event";
 import { Calendar, Users, MapPin, ArrowRight } from "lucide-react";
-import React from "react";
+import React, { memo, useMemo } from "react";
 
 export interface EventCardProps {
   event: EventModel;
@@ -14,22 +14,22 @@ export interface EventCardProps {
   onSelect: (id: string) => void;
 }
 
-export const EventCard: React.FC<EventCardProps> = ({
+const TYPE_COLOR_MAP: Record<
+  string,
+  "purple" | "brand" | "success" | "neutral"
+> = {
+  wedding: "purple",
+  birthday: "brand",
+  community: "success",
+  other: "neutral",
+};
+
+export const EventCard: React.FC<EventCardProps> = memo(({
   event,
   isActive,
   onSelect,
 }) => {
-  const progress = ProgressTracker.calculateProgress(event);
-
-  const typeColorMap: Record<
-    string,
-    "purple" | "brand" | "success" | "neutral"
-  > = {
-    wedding: "purple",
-    birthday: "brand",
-    community: "success",
-    other: "neutral",
-  };
+  const progress = useMemo(() => ProgressTracker.calculateProgress(event), [event]);
 
   return (
     <Card
@@ -53,7 +53,7 @@ export const EventCard: React.FC<EventCardProps> = ({
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Badge variant={typeColorMap[event.type] || "neutral"}>
+            <Badge variant={TYPE_COLOR_MAP[event.type] || "neutral"}>
               {event.type.toUpperCase()}
             </Badge>
             {event.isDemo && (
@@ -62,9 +62,9 @@ export const EventCard: React.FC<EventCardProps> = ({
               </span>
             )}
           </div>
-          <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-1">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-1">
             {event.name}
-          </h4>
+          </h3>
         </div>
         <div className="text-right shrink-0">
           <p className="text-sm font-bold text-brand-600 dark:text-brand-400">
@@ -104,4 +104,6 @@ export const EventCard: React.FC<EventCardProps> = ({
       </div>
     </Card>
   );
-};
+});
+
+EventCard.displayName = "EventCard";

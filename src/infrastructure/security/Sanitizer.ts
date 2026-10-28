@@ -1,7 +1,7 @@
 export class Sanitizer {
   private static readonly HTML_TAG_REGEX = /<[^>]*>?/gm;
   private static readonly SCRIPT_REGEX = /(?:javascript|vbscript|data):/gi;
-  private static readonly CONTROL_CHARS_REGEX = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
+  private static readonly CONTROL_CHARS_REGEX = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\u200B-\u200D\uFEFF\u202A-\u202E]/g;
 
   /**
    * Sanitizes generic string inputs by stripping HTML tags, script schemes,

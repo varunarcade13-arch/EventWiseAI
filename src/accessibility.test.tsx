@@ -17,6 +17,9 @@ import { ToastProvider, useToast } from "./components/ui/Toast";
 import { ProgressBar } from "./components/ui/ProgressBar";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
+import { AIAdvisorModal } from "./features/ai-assistant/AIAdvisorModal";
+import { EventCard } from "./features/dashboard/EventCard";
+import { Tabs } from "./components/ui/Tabs";
 import { EventModel, PlanningProgress } from "@/types/event";
 
 const sampleEvent: EventModel = {
@@ -292,4 +295,105 @@ describe("Automated Accessibility Suite (axe-core WCAG 2.2 AA)", () => {
     const violations = await checkA11y(container);
     expect(violations).toEqual([]);
   });
+
+  it("verifies EventCard has no accessibility violations", async () => {
+    const { container } = render(
+      <main>
+        <h2>Your Events Directory</h2>
+        <EventCard
+          event={sampleEvent}
+          isActive={true}
+          onSelect={vi.fn()}
+        />
+      </main>
+    );
+    const violations = await checkA11y(container);
+    expect(violations).toEqual([]);
+  });
+
+  it("verifies Tabs has no accessibility violations", async () => {
+    const { container } = render(
+      <main>
+        <h1>Navigation</h1>
+        <Tabs
+          tabs={[
+            { id: "tab1", label: "Tab 1" },
+            { id: "tab2", label: "Tab 2", badge: 3 },
+          ]}
+          activeTab="tab1"
+          onChange={vi.fn()}
+        />
+        <div role="tabpanel" id="panel-tab1" aria-labelledby="tab-tab1">
+          Tab 1 panel content
+        </div>
+      </main>
+    );
+    const violations = await checkA11y(container);
+    expect(violations).toEqual([]);
+  });
+
+  it("verifies AIAdvisorModal has no accessibility violations in budget mode", async () => {
+    const { container } = render(
+      <AIAdvisorModal
+        type="budget"
+        isOpen={true}
+        onClose={vi.fn()}
+        budgetAnalysis={{
+          healthScore: 88,
+          summary: "Budget is well-balanced across core categories.",
+          overspendingRisk: false,
+          underallocatedCategories: [],
+          potentialSavings: [
+            { category: "Venue", tip: "Book off-peak weekday", estimatedSavings: 50000 },
+          ],
+          redistributionSuggestions: [
+            { category: "Decor", currentAllocation: 200000, suggestedAllocation: 150000, reason: "Reallocate savings to catering" },
+          ],
+        }}
+      />
+    );
+    const violations = await checkA11y(container);
+    expect(violations).toEqual([]);
+  });
+
+  it("verifies AIAdvisorModal has no accessibility violations in ideas mode", async () => {
+    const { container } = render(
+      <AIAdvisorModal
+        type="ideas"
+        isOpen={true}
+        onClose={vi.fn()}
+        ideasPlan={{
+          summary: "Inspiring creative concept for gala evening.",
+          themes: ["Celestial Elegance", "Eco Botanical"],
+          activities: ["Interactive photo installation", "Live jazz quartet"],
+          foodIdeas: ["Artisan grazing station", "Signature mocktail bar"],
+          decorationIdeas: ["Suspended fairy light canopy", "Recycled floral centerpieces"],
+          entertainment: ["Live DJ", "Acoustic duo"],
+          guestExperiences: ["Personalized welcome gifts", "Photo booth"],
+        }}
+      />
+    );
+    const violations = await checkA11y(container);
+    expect(violations).toEqual([]);
+  });
+
+  it("verifies AIAdvisorModal has no accessibility violations in risks mode", async () => {
+    const { container } = render(
+      <AIAdvisorModal
+        type="risks"
+        isOpen={true}
+        onClose={vi.fn()}
+        riskAnalysis={{
+          summary: "Identified high-priority contingency safeguards.",
+          risks: [
+            { risk: "Severe weather delay", impact: "high", mitigation: "Reserve indoor ballroom marquee" },
+          ],
+        }}
+        onApplyRisks={vi.fn()}
+      />
+    );
+    const violations = await checkA11y(container);
+    expect(violations).toEqual([]);
+  });
 });
+

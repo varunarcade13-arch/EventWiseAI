@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AddTaskModal } from "./AddTaskModal";
 
@@ -129,4 +129,30 @@ describe("AddTaskModal component", () => {
     });
     expect(handleClose).toHaveBeenCalled();
   });
+
+  it("prevents double submission when already submitting", async () => {
+    const user = userEvent.setup();
+    let resolveAdd: () => void;
+    const handleAdd = vi.fn().mockImplementation(() => new Promise<void>((resolve) => { resolveAdd = resolve; }));
+
+    render(
+      <AddTaskModal
+        isOpen={true}
+        onClose={vi.fn()}
+        defaultDate="2027-01-01"
+        onAdd={handleAdd}
+      />
+    );
+
+    await user.type(screen.getByLabelText(/task title/i), "Book Venue");
+    const saveButton = screen.getByRole("button", { name: /add task/i });
+    await user.click(saveButton);
+
+    const form = screen.getByRole("dialog").querySelector("form")!;
+    fireEvent.submit(form);
+
+    expect(handleAdd).toHaveBeenCalledTimes(1);
+    resolveAdd!();
+  });
 });
+

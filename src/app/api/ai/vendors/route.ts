@@ -1,4 +1,4 @@
-import { checkRateLimit, handleApiError } from "@/app/api/apiHelper";
+import { apiSuccess, checkRateLimit, handleApiError } from "@/app/api/apiHelper";
 import { GeminiAIPlannerService } from "@/infrastructure/ai/GeminiAIPlannerService";
 import { Sanitizer } from "@/infrastructure/security/Sanitizer";
 import { CurrencyCode, EventType } from "@/types/event";
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       currency: parseResult.data.currency as CurrencyCode,
     });
 
-    return NextResponse.json({ success: true, vendors });
+    return apiSuccess({ success: true, vendors });
   } catch (error) {
     return handleApiError(error);
   }

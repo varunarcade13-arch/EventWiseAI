@@ -16,9 +16,11 @@ describe("/api/ai/health route", () => {
     process.env.GEMINI_API_KEY = originalEnv;
   });
 
+  const dummyReq = () => new Request("http://localhost/api/ai/health");
+
   it("returns 503 if GEMINI_API_KEY is not configured", async () => {
     process.env.GEMINI_API_KEY = "";
-    const res = await GET();
+    const res = await GET(dummyReq());
     expect(res.status).toBe(503);
     const json = await res.json();
     expect(json.status).toBe("error");
@@ -41,7 +43,7 @@ describe("/api/ai/health route", () => {
         }) as unknown as GoogleGenerativeAI
     );
 
-    const res = await POST();
+    const res = await POST(dummyReq());
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.status).toBe("ok");
@@ -67,7 +69,7 @@ describe("/api/ai/health route", () => {
         }) as unknown as GoogleGenerativeAI
     );
 
-    const res = await GET();
+    const res = await GET(dummyReq());
     expect(res.status).toBe(502);
     const json = await res.json();
     expect(json.status).toBe("error");
@@ -86,7 +88,7 @@ describe("/api/ai/health route", () => {
         }) as unknown as GoogleGenerativeAI
     );
 
-    const res = await GET();
+    const res = await GET(dummyReq());
     expect(res.status).toBe(502);
     const json = await res.json();
     expect(json.status).toBe("error");
@@ -106,7 +108,7 @@ describe("/api/ai/health route", () => {
         }) as unknown as GoogleGenerativeAI
     );
 
-    const res = await GET();
+    const res = await GET(dummyReq());
     expect(res.status).toBe(502);
     const json = await res.json();
     expect(json.status).toBe("error");
@@ -114,5 +116,27 @@ describe("/api/ai/health route", () => {
     expect(json.error.message).toBe("Unknown error");
     expect(json.error.name).toBe("Error");
   });
+
+  it("enforces rate limits when request is provided to GET/POST", async () => {
+    const { globalApiRateLimiter } = await import("@/infrastructure/security/RateLimiter");
+    globalApiRateLimiter.reset();
+    const req = new Request("http://localhost/api/ai/health", {
+      method: "GET",
+      headers: { "x-real-ip": "1.2.3.4" },
+    });
+    for (let i = 0; i < 30; i++) {
+      globalApiRateLimiter.check("1.2.3.4");
+    }
+    const blockedGet = await GET(req);
+    expect(blockedGet.status).toBe(429);
+
+    const postReq = new Request("http://localhost/api/ai/health", {
+      method: "POST",
+      headers: { "x-real-ip": "1.2.3.4" },
+    });
+    const blockedPost = await POST(postReq);
+    expect(blockedPost.status).toBe(429);
+  });
 });
+
 
